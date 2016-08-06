@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,6 +37,7 @@ public class BattleSystemStateMachine : MonoBehaviour {
     public Dictionary<BaseCharacterClass, GameObject> participantDictionary = new Dictionary<BaseCharacterClass, GameObject>();
     private MainCharacter mc = new MainCharacter();
     private DetermineEnemies determineEnems = new DetermineEnemies();
+    private Image healthBar;
     public List<BaseCharacterClass> participantList = new List<BaseCharacterClass>();
     public List<BaseCharacterClass> enemyList = new List<BaseCharacterClass>();
     public List<BaseCharacterClass> heroList = new List<BaseCharacterClass>();
@@ -266,6 +268,9 @@ public class BattleSystemStateMachine : MonoBehaviour {
                             animator.SetTrigger("TakeDamage");
                             TextMesh textMesh = participantDictionary[pair.Key].GetComponentInChildren<TextMesh>(true);
                             textMesh.text = pair.Value.ToString();
+                            Transform healthBarHolder = participantDictionary[pair.Key].transform.Find("AnimationsContainer/Canvas/HealthBar");
+                            healthBar = healthBarHolder.gameObject.GetComponent<Image>();
+                            healthBar.fillAmount = (float)pair.Key.Health / (float)pair.Key.MaxHealth;
                             Debug.Log(participantList[currentHero].CharacterClassName + " deals " + pair.Value.ToString() + " damage to " + pair.Key.CharacterClassName);
                         }
                         currentHero++;

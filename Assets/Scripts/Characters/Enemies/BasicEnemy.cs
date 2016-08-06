@@ -10,6 +10,7 @@ public class BasicEnemy : BaseCharacterClass
         CharacterClassName = "Enemy";
         CharacterClassDescription = "This a bad guy.";
         Health = 250;
+        MaxHealth = 250;
         TurnPriority = 4;
         isEnemy = true;
         Move01Damage = 20;

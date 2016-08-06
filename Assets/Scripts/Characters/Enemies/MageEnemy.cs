@@ -11,6 +11,7 @@ public class MageEnemy : BaseCharacterClass
         CharacterClassName = "Mage Enemy";
         CharacterClassDescription = "This a bad guy.";
         Health = 200;
+        MaxHealth = 200;
         TurnPriority = 4;
         isEnemy = true;
         Move01Damage = 30;
