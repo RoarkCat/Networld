@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System;
+using System.Collections.Generic;
 
 public class Nathan : BaseCharacterClass
 {
@@ -9,6 +11,7 @@ public class Nathan : BaseCharacterClass
         CharacterClassName = "Nathan";
         CharacterClassDescription = "Just some nerd.";
         Health = 150;
+        MaxHealth = 150;
         TurnPriority = 3;
         isEnemy = false;
         Move01Damage = 50;
@@ -19,6 +22,15 @@ public class Nathan : BaseCharacterClass
     public override void Move01()
     {
         proceedNext = true;
+        HitboxCollision[] checkHitbox = MonoBehaviour.FindObjectsOfType(typeof(HitboxCollision)) as HitboxCollision[];
+        damagedEnemies = new List<GameObject>();
+        foreach (HitboxCollision hbox in checkHitbox)
+        {
+            if (hbox.isHit)
+            {
+                damagedEnemies.Add(hbox.hitboxGameObject);
+            }
+        }
         Debug.Log("Nathan move 1!");
         proceedNext = false;
     }
@@ -26,6 +38,15 @@ public class Nathan : BaseCharacterClass
     public override void Move02()
     {
         proceedNext = true;
+        HitboxCollision[] checkHitbox = MonoBehaviour.FindObjectsOfType(typeof(HitboxCollision)) as HitboxCollision[];
+        damagedEnemies = new List<GameObject>();
+        foreach (HitboxCollision hbox in checkHitbox)
+        {
+            if (hbox.isHit)
+            {
+                damagedEnemies.Add(hbox.hitboxGameObject);
+            }
+        }
         Debug.Log("Nathan move 2!");
         proceedNext = false;
     }
@@ -33,6 +54,15 @@ public class Nathan : BaseCharacterClass
     public override void Ultimate()
     {
         proceedNext = true;
+        HitboxCollision[] checkHitbox = MonoBehaviour.FindObjectsOfType(typeof(HitboxCollision)) as HitboxCollision[];
+        damagedEnemies = new List<GameObject>();
+        foreach (HitboxCollision hbox in checkHitbox)
+        {
+            if (hbox.isHit)
+            {
+                damagedEnemies.Add(hbox.hitboxGameObject);
+            }
+        }
         Debug.Log("Nathan ultimate!!");
         proceedNext = false;
     }

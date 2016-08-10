@@ -143,6 +143,7 @@ public class BattleSystemStateMachine : MonoBehaviour {
         {
             participantList.Add(mc);
             heroList.Add(mc);
+            participantDictionary.Add(mc, playerPrefab);
             foreach (PartyLayout ally in gameLoop.partyManager.listOfAllies)
             {
                 GameObject go = Instantiate(ally.friendlyPrefab, ally.friendlyPosition, Quaternion.identity) as GameObject;
@@ -216,15 +217,15 @@ public class BattleSystemStateMachine : MonoBehaviour {
                 }
                 if (randomMove == 0)
                 {
-                    executeEnemyMove(participantList[currentHero].Move01, "Move01");
+                    executeEnemyMove(participantList[currentHero].Move01, participantList[currentHero].Move01Damage, "Move01");
                 }
                 else if (randomMove == 1)
                 {
-                    executeEnemyMove(participantList[currentHero].Move02, "Move02");
+                    executeEnemyMove(participantList[currentHero].Move02, participantList[currentHero].Move02Damage, "Move02");
                 }
                 else if (randomMove == 2)
                 {
-                    executeEnemyMove(participantList[currentHero].Ultimate, "Move03");
+                    executeEnemyMove(participantList[currentHero].Ultimate, participantList[currentHero].UltimateDamage, "Move03");
                 }
             }
         }
@@ -239,56 +240,11 @@ public class BattleSystemStateMachine : MonoBehaviour {
                 int randomEnemy = UnityEngine.Random.Range(0, enemyList.Count);
                 if (useMove01 == true)
                 {
-                    participantList[currentHero].Move01();
-                    if (participantList[currentHero].proceedNext == false)
-                    {
-                        useMove01 = false;
-                        Dictionary<BaseCharacterClass, int> damageDict = new Dictionary<BaseCharacterClass, int>();
-                        foreach (GameObject enemy in participantList[currentHero].damagedEnemies)
-                        {
-                            foreach (KeyValuePair<BaseCharacterClass, GameObject> pair in participantDictionary)
-                            {
-                                if (pair.Value == enemy)
-                                {
-                                    if (damageDict.ContainsKey(pair.Key))
-                                    {
-                                        damageDict[pair.Key] = damageDict[pair.Key] + participantList[currentHero].Move01Damage;
-                                    }
-                                    else
-                                    {
-                                        damageDict.Add(pair.Key, participantList[currentHero].Move01Damage);
-                                    }
-                                }
-                            }
-                        }
-                        foreach (KeyValuePair<BaseCharacterClass, int> pair in damageDict)
-                        {
-                            pair.Key.Health = pair.Key.Health - pair.Value;
-                            Animator animator = participantDictionary[pair.Key].GetComponent<Animator>();
-                            animator.SetTrigger("TakeDamage");
-                            TextMesh textMesh = participantDictionary[pair.Key].GetComponentInChildren<TextMesh>(true);
-                            textMesh.text = pair.Value.ToString();
-                            Transform healthBarHolder = participantDictionary[pair.Key].transform.Find("AnimationsContainer/Canvas/HealthBar");
-                            healthBar = healthBarHolder.gameObject.GetComponent<Image>();
-                            healthBar.fillAmount = (float)pair.Key.Health / (float)pair.Key.MaxHealth;
-                            Debug.Log(participantList[currentHero].CharacterClassName + " deals " + pair.Value.ToString() + " damage to " + pair.Key.CharacterClassName);
-                        }
-                        currentHero++;
-                        checkForDeath();
-                        checkForEnd();
-                        resetTrackerCount();
-                    }
+                    executeHeroMove(participantList[currentHero].Move01, participantList[currentHero].Move01Damage, ref useMove01, null);
                 }
                 else if (useMove02 == true)
                 {
-                    participantList[currentHero].Move02();
-                    enemyList[randomEnemy].Health = enemyList[randomEnemy].Health - participantList[currentHero].Move02Damage;
-                    Debug.Log(participantList[currentHero].CharacterClassName + " deals " + participantList[currentHero].Move02Damage.ToString() + " damage to " + enemyList[randomEnemy].CharacterClassName + ". " + enemyList[randomEnemy].Health.ToString() + " health left.");
-                    currentHero++;
-                    checkForDeath();
-                    checkForEnd();
-                    resetTrackerCount();
-                    useMove02 = false;
+                    executeHeroMove(participantList[currentHero].Move02, participantList[currentHero].Move02Damage, ref useMove02, null);
                 }
                 else if (useUltimate == true)
                 {
@@ -369,7 +325,51 @@ public class BattleSystemStateMachine : MonoBehaviour {
         }
     }
 
-    public void executeEnemyMove(Action moveMethod, string moveName)
+    public void executeHeroMove(Action moveMethod, int moveDamage, ref bool moveBeingUsed, string moveName)
+    {
+        // moveName is for the animator trigger.
+        moveMethod();
+        if (participantList[currentHero].proceedNext == false)
+        {
+            moveBeingUsed = false;
+            Dictionary<BaseCharacterClass, int> damageDict = new Dictionary<BaseCharacterClass, int>();
+            foreach (GameObject enemy in participantList[currentHero].damagedEnemies)
+            {
+                foreach (KeyValuePair<BaseCharacterClass, GameObject> pair in participantDictionary)
+                {
+                    if (pair.Value == enemy)
+                    {
+                        if (damageDict.ContainsKey(pair.Key))
+                        {
+                            damageDict[pair.Key] = damageDict[pair.Key] + moveDamage;
+                        }
+                        else
+                        {
+                            damageDict.Add(pair.Key, moveDamage);
+                        }
+                    }
+                }
+            }
+            foreach (KeyValuePair<BaseCharacterClass, int> pair in damageDict)
+            {
+                pair.Key.Health = pair.Key.Health - pair.Value;
+                Animator animator = participantDictionary[pair.Key].GetComponent<Animator>();
+                animator.SetTrigger("TakeDamage");
+                TextMesh textMesh = participantDictionary[pair.Key].GetComponentInChildren<TextMesh>(true);
+                textMesh.text = pair.Value.ToString();
+                Transform healthBarHolder = participantDictionary[pair.Key].transform.Find("AnimationsContainer/Canvas/HealthBar");
+                healthBar = healthBarHolder.gameObject.GetComponent<Image>();
+                healthBar.fillAmount = (float)pair.Key.Health / (float)pair.Key.MaxHealth;
+                Debug.Log(participantList[currentHero].CharacterClassName + " deals " + pair.Value.ToString() + " damage to " + pair.Key.CharacterClassName);
+            }
+            currentHero++;
+            checkForDeath();
+            checkForEnd();
+            resetTrackerCount();
+        }
+    }
+
+    public void executeEnemyMove(Action moveMethod, int moveDamage, string moveName)
     {
         if (heroList[randomHero].isDead)
         {
@@ -400,8 +400,11 @@ public class BattleSystemStateMachine : MonoBehaviour {
                     participant.moveIsFinished = false;
                 }
                 animator.SetTrigger("Reset");
-                heroList[randomHero].Health = heroList[randomHero].Health - participantList[currentHero].Move01Damage;
-                Debug.Log(participantList[currentHero].CharacterClassName + " deals " + participantList[currentHero].Move01Damage.ToString() + " damage to " + heroList[randomHero].CharacterClassName + ". " + heroList[randomHero].Health.ToString() + " health left.");
+                heroList[randomHero].Health = heroList[randomHero].Health - moveDamage;
+                Transform healthBarHolder = participantDictionary[heroList[randomHero]].transform.Find("AnimationsContainer/Canvas/HealthBar");
+                healthBar = healthBarHolder.gameObject.GetComponent<Image>();
+                healthBar.fillAmount = (float)heroList[randomHero].Health / (float)heroList[randomHero].MaxHealth;
+                Debug.Log(participantList[currentHero].CharacterClassName + " deals " + moveDamage.ToString() + " damage to " + heroList[randomHero].CharacterClassName + ". " + heroList[randomHero].Health.ToString() + " health left.");
                 currentHero++;
                 checkForDeath();
                 checkForEnd();

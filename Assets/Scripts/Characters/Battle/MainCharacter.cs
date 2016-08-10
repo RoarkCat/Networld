@@ -12,6 +12,7 @@ public class MainCharacter : BaseCharacterClass {
     public bool moveFirstPass = true;
     public GameObject movingBar;
     public GameObject movingBarParent;
+    public GameObject catchAllCollider;
 
     // stuff for move 1
     public int boltsLanded = 0;
@@ -27,6 +28,7 @@ public class MainCharacter : BaseCharacterClass {
         CharacterClassName = "Your Name";
         CharacterClassDescription = "You do you, man.";
         Health = 100;
+        MaxHealth = 100;
         TurnPriority = 1;
         isEnemy = false;
         Move01Damage = 50;
@@ -65,10 +67,6 @@ public class MainCharacter : BaseCharacterClass {
                 if (hbox.isHit)
                 {
                     damagedEnemies.Add(hbox.hitboxGameObject);
-                }
-                else
-                {
-                    Debug.Log("Miss!");
                 }
             }
             clonedBolts.Add(newBolt);
@@ -120,6 +118,15 @@ public class MainCharacter : BaseCharacterClass {
     public override void Move02()
     {
         proceedNext = true;
+        HitboxCollision[] checkHitbox = MonoBehaviour.FindObjectsOfType(typeof(HitboxCollision)) as HitboxCollision[];
+        damagedEnemies = new List<GameObject>();
+        foreach (HitboxCollision hbox in checkHitbox)
+        {
+            if (hbox.isHit)
+            {
+                damagedEnemies.Add(hbox.hitboxGameObject);
+            }
+        }
         Debug.Log("MC move 2!");
         proceedNext = false;
     }
@@ -143,5 +150,14 @@ public class MainCharacter : BaseCharacterClass {
             moveFirstPass = true;
             proceedNext = false;
         }
+        HitboxCollision[] checkHitbox = MonoBehaviour.FindObjectsOfType(typeof(HitboxCollision)) as HitboxCollision[];
+        foreach (HitboxCollision hbox in checkHitbox)
+        {
+            if (hbox.isHit)
+            {
+                damagedEnemies.Add(hbox.hitboxGameObject);
+            }
+        }
+        damagedEnemies.Clear();
     }
 }
