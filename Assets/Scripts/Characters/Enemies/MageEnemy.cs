@@ -17,6 +17,7 @@ public class MageEnemy : BaseCharacterClass
         Move01Damage = 30;
         Move02Damage = 40;
         UltimateDamage = 45;
+        proceedNext = true;
     }
 
     public override void Move01()
@@ -29,8 +30,8 @@ public class MageEnemy : BaseCharacterClass
         }
         if (moveIsFinished)
         {
-            Debug.Log(moveIsFinished);
             moveHasExecuted = false;
+            moveIsFinished = false;
             proceedNext = false;
         }
     }
@@ -45,8 +46,8 @@ public class MageEnemy : BaseCharacterClass
         }
         if (moveIsFinished)
         {
-            Debug.Log(moveIsFinished);
             moveHasExecuted = false;
+            moveIsFinished = false;
             proceedNext = false;
         }
     }
@@ -61,8 +62,8 @@ public class MageEnemy : BaseCharacterClass
         }
         if (moveIsFinished)
         {
-            Debug.Log(moveIsFinished);
             moveHasExecuted = false;
+            moveIsFinished = false;
             proceedNext = false;
         }
     }

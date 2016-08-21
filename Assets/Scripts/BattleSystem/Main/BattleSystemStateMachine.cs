@@ -376,7 +376,7 @@ public class BattleSystemStateMachine : MonoBehaviour {
             randomHero = UnityEngine.Random.Range(0, heroList.Count);
         }
         else {
-
+            Debug.Log(participantList[currentHero].proceedNext);
             moveMethod();
             if (!moveIsFinished)
             {
@@ -387,7 +387,6 @@ public class BattleSystemStateMachine : MonoBehaviour {
                         animator = pair.Value.GetComponent<Animator>();
                         animator.SetTrigger(moveName);
                         moveIsFinished = true;
-                        Debug.Log(pair);
                     }
                 }
             }
@@ -401,6 +400,17 @@ public class BattleSystemStateMachine : MonoBehaviour {
                 }
                 animator.SetTrigger("Reset");
                 heroList[randomHero].Health = heroList[randomHero].Health - moveDamage;
+                foreach (KeyValuePair<BaseCharacterClass, GameObject> pair in participantDictionary)
+                {
+                    if (heroList[randomHero] == pair.Key)
+                    {
+                        Debug.Log("match");
+                        Animator heroAnimator = participantDictionary[pair.Key].GetComponent<Animator>();
+                        heroAnimator.SetTrigger("TakeDamage");
+                        TextMesh textMesh = participantDictionary[pair.Key].GetComponentInChildren<TextMesh>(true);
+                        textMesh.text = moveDamage.ToString();
+                    }
+                }
                 Transform healthBarHolder = participantDictionary[heroList[randomHero]].transform.Find("AnimationsContainer/Canvas/HealthBar");
                 healthBar = healthBarHolder.gameObject.GetComponent<Image>();
                 healthBar.fillAmount = (float)heroList[randomHero].Health / (float)heroList[randomHero].MaxHealth;

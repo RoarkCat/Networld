@@ -16,6 +16,7 @@ public class BasicEnemy : BaseCharacterClass
         Move01Damage = 20;
         Move02Damage = 30;
         UltimateDamage = 50;
+        proceedNext = true;
     }
 
     public override void Move01()
@@ -23,13 +24,14 @@ public class BasicEnemy : BaseCharacterClass
         proceedNext = true;
         if (!moveHasExecuted)
         {
+            moveIsFinished = false;
             Debug.Log("Enemy move 1!");
             moveHasExecuted = true;
         }
         if (moveIsFinished)
         {
-            Debug.Log(moveIsFinished);
             moveHasExecuted = false;
+            moveIsFinished = false;
             proceedNext = false;
         }
     }
@@ -39,12 +41,14 @@ public class BasicEnemy : BaseCharacterClass
         proceedNext = true;
         if (!moveHasExecuted)
         {
+            moveIsFinished = false;
             Debug.Log("Enemy move 2!");
             moveHasExecuted = true;
         }
         if (moveIsFinished)
         {
             moveHasExecuted = false;
+            moveIsFinished = false;
             proceedNext = false;
         }
     }
@@ -54,12 +58,14 @@ public class BasicEnemy : BaseCharacterClass
         proceedNext = true;
         if (!moveHasExecuted)
         {
+            moveIsFinished = false;
             Debug.Log("Enemy ultimate!!");
             moveHasExecuted = true;
         }
         if (moveIsFinished)
         {
             moveHasExecuted = false;
+            moveIsFinished = false;
             proceedNext = false;
         }
     }
