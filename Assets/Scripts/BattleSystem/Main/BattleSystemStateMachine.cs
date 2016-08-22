@@ -144,6 +144,7 @@ public class BattleSystemStateMachine : MonoBehaviour {
             participantList.Add(mc);
             heroList.Add(mc);
             participantDictionary.Add(mc, playerPrefab);
+            playerPrefab.GetComponent<Animator>().SetTrigger("Idle");
             foreach (PartyLayout ally in gameLoop.partyManager.listOfAllies)
             {
                 GameObject go = Instantiate(ally.friendlyPrefab, ally.friendlyPosition, Quaternion.identity) as GameObject;
