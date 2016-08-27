@@ -90,9 +90,9 @@ using System.Collections;
         }
 
         public void stopFixedUpdate()
-    {
+        {
         rb.velocity = new Vector3(0, 0, 0);
-    }
+        }
 
         void OnCollisionEnter()
         {

@@ -17,6 +17,10 @@ public class Nathan : BaseCharacterClass
         Move01Damage = 50;
         Move02Damage = 10;
         UltimateDamage = 80;
+        Move01Name = "Nathan Move 01";
+        Move02Name = "Nathan Move 02";
+        UltimateName = "Nathan Ultimate";
+        UltimateLimitRequirement = 50;
     }
 
     public override void Move01()

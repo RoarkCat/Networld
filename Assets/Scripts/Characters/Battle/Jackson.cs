@@ -17,6 +17,10 @@ public class Jackson : BaseCharacterClass
         Move01Damage = 50;
         Move02Damage = 10;
         UltimateDamage = 80;
+        Move01Name = "Jackson Move 01";
+        Move02Name = "Jackson Move 02";
+        UltimateName = "Jackson Ultimate";
+        UltimateLimitRequirement = 100;
     }
 
     public override void Move01()

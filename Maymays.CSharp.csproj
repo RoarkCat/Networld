@@ -75,8 +75,10 @@
     <Compile Include="Assets\Scripts\Characters\Enemies\MageEnemy.cs" />
     <Compile Include="Assets\Scripts\Characters\Runner\BaseRunner.cs" />
     <Compile Include="Assets\Scripts\Managers\GameLoop.cs" />
+    <Compile Include="Assets\Scripts\Managers\LimitBreakCollection.cs" />
     <Compile Include="Assets\Scripts\Managers\PartyManager.cs" />
     <Compile Include="Assets\Scripts\Objects\HitboxCollision.cs" />
+    <Compile Include="Assets\Scripts\Objects\LimitBreakItem.cs" />
     <Compile Include="Assets\Scripts\Objects\OneWayPlatform.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\SyntaxTree\UnityVS\2015\UnityVS.CSharp.targets" />

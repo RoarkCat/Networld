@@ -37,6 +37,7 @@ public class BattleSystemStateMachine : MonoBehaviour {
     public Dictionary<BaseCharacterClass, GameObject> participantDictionary = new Dictionary<BaseCharacterClass, GameObject>();
     private MainCharacter mc = new MainCharacter();
     private DetermineEnemies determineEnems = new DetermineEnemies();
+    private LimitBreakCollection limitBreakCollection;
     private Image healthBar;
     public List<BaseCharacterClass> participantList = new List<BaseCharacterClass>();
     public List<BaseCharacterClass> enemyList = new List<BaseCharacterClass>();
@@ -44,6 +45,7 @@ public class BattleSystemStateMachine : MonoBehaviour {
 
     public void battleStart () {
         currentState = BattleStates.INTRO;
+        limitBreakCollection = this.GetComponent<LimitBreakCollection>();
 	}
 
     public void battleUpdate () {
@@ -122,16 +124,17 @@ public class BattleSystemStateMachine : MonoBehaviour {
         }
         else if (currentState == BattleStates.START)
         {
-            if (GUILayout.Button("USE MOVE 1") && participantList[currentHero].proceedNext == false)
+            if (GUILayout.Button(participantList[currentHero].Move01Name) && participantList[currentHero].proceedNext == false)
             {
                 useMove01 = true;
             }
-            else if (GUILayout.Button("USE MOVE 2") && participantList[currentHero].proceedNext == false)
+            else if (GUILayout.Button(participantList[currentHero].Move02Name) && participantList[currentHero].proceedNext == false)
             {
                 useMove02 = true;
             }
-            else if (GUILayout.Button("USE ULTIMATE") && participantList[currentHero].proceedNext == false)
+            else if (GUILayout.Button(participantList[currentHero].UltimateName) && participantList[currentHero].proceedNext == false && participantList[currentHero].UltimateLimitRequirement <= limitBreakCollection.limitBreakCurrent)
             {
+                limitBreakCollection.limitBreakCurrent -= participantList[currentHero].UltimateLimitRequirement;
                 useUltimate = true;
             }
         }

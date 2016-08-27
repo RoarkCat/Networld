@@ -34,6 +34,10 @@ public class MainCharacter : BaseCharacterClass {
         Move01Damage = 50;
         Move02Damage = 10;
         UltimateDamage = 80;
+        Move01Name = "Lightning Strike";
+        Move02Name = "I dunno";
+        UltimateName = "Ultimatummmm";
+        UltimateLimitRequirement = 50;
     }
 
     public override void Move01()

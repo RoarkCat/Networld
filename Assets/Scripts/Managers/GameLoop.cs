@@ -8,6 +8,7 @@ public class GameLoop : MonoBehaviour {
     public bool isRunning = true;
     public EncounterScript battleEncounterInstance;
     public PartyManager partyManager;
+    private LimitBreakCollection limitBreakCollection = new LimitBreakCollection();
 
     void Start()
     {
