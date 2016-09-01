@@ -135,6 +135,9 @@ public class BattleSystemStateMachine : MonoBehaviour {
             else if (GUILayout.Button(participantList[currentHero].UltimateName) && participantList[currentHero].proceedNext == false && participantList[currentHero].UltimateLimitRequirement <= limitBreakCollection.limitBreakCurrent)
             {
                 limitBreakCollection.limitBreakCurrent -= participantList[currentHero].UltimateLimitRequirement;
+                Transform limitBarHolder = playerPrefab.transform.parent.Find("OrthoCamera/Canvas/LimitBreakBar");
+                Image limitBar = limitBarHolder.gameObject.GetComponent<Image>();
+                limitBar.fillAmount = (float)playerPrefab.transform.parent.GetComponent<LimitBreakCollection>().limitBreakCurrent / (float)playerPrefab.transform.parent.GetComponent<LimitBreakCollection>().limitBreakMax;
                 useUltimate = true;
             }
         }
