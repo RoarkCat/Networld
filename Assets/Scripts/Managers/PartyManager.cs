@@ -13,4 +13,5 @@ public class PartyLayout
 {
     public GameObject friendlyPrefab;
     public Vector3 friendlyPosition;
+    public BaseCharacterClass characterScript;
 }

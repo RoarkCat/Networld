@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public abstract class BaseCharacterClass {
+public abstract class BaseCharacterClass : MonoBehaviour {
 
     public string CharacterClassName { get; set; }
     public string CharacterClassDescription { get; set; }

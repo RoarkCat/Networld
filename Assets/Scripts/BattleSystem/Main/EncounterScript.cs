@@ -6,6 +6,7 @@ public class EncounterScript : MonoBehaviour {
 
     public List<EnemyLayout> listOfEnemies;
     public Transform battleEncounterTransform;
+    public Transform playerPosition;
 
 }
 

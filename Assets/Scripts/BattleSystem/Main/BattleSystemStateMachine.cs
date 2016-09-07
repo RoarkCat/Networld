@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,9 +33,14 @@ public class BattleSystemStateMachine : MonoBehaviour {
     private float randomMove;
     private int randomHero;
     private Animator animator;
+    private bool firstPassPosition;
+    private float playerTravelDistance;
+    private float playerStartTravelTime;
+    private float playerTravelSpeed = 1.0f;
 
     public BattleStates currentState;
     public Dictionary<BaseCharacterClass, GameObject> participantDictionary = new Dictionary<BaseCharacterClass, GameObject>();
+    public Dictionary<string, int> healthManager = new Dictionary<string, int>();
     private MainCharacter mc = new MainCharacter();
     private DetermineEnemies determineEnems = new DetermineEnemies();
     private LimitBreakCollection limitBreakCollection;
@@ -117,9 +123,19 @@ public class BattleSystemStateMachine : MonoBehaviour {
     {
         if (currentState == BattleStates.INTRO)
         {
-            if (GUILayout.Button("NEXT STATE"))
+            if (!firstPassPosition)
+            {
+                playerStartTravelTime = Time.time;
+                playerTravelDistance = Vector3.Distance(playerPrefab.transform.parent.position, gameLoop.battleEncounterInstance.playerPosition.position);
+                firstPassPosition = true;
+            }
+            float distCovered = (Time.time - playerStartTravelTime) * playerTravelSpeed;
+            float fracTraveled = distCovered / playerTravelDistance;
+            playerPrefab.transform.parent.position = Vector3.Lerp(playerPrefab.transform.parent.position, gameLoop.battleEncounterInstance.playerPosition.position, fracTraveled);
+            if (playerPrefab.transform.parent.position == gameLoop.battleEncounterInstance.playerPosition.position)
             {
                 currentState = BattleStates.START;
+                firstPassPosition = false;
             }
         }
         else if (currentState == BattleStates.START)
@@ -147,31 +163,41 @@ public class BattleSystemStateMachine : MonoBehaviour {
     {
         if (!listCreationFinished)
         {
-            participantList.Add(mc);
-            heroList.Add(mc);
-            participantDictionary.Add(mc, playerPrefab);
+            BaseCharacterClass mcScript = playerPrefab.GetComponent<BaseCharacterClass>();
+            participantList.Add(mcScript);
+            heroList.Add(mcScript);
+            participantDictionary.Add(mcScript, playerPrefab);
             playerPrefab.GetComponent<Animator>().SetTrigger("Idle");
+            foreach (KeyValuePair<string, int> heroHealth in healthManager)
+            {
+                if (heroHealth.Key == mcScript.CharacterClassName)
+                {
+                    mcScript.Health = heroHealth.Value;
+                }
+            }
             foreach (PartyLayout ally in gameLoop.partyManager.listOfAllies)
             {
                 GameObject go = Instantiate(ally.friendlyPrefab, ally.friendlyPosition, Quaternion.identity) as GameObject;
                 go.transform.parent = gameLoop.partyManager.allyTransform;
                 go.transform.localPosition = ally.friendlyPosition;
-                // As allies are created, add a tag and call here. Fix eventually maybe...
-                if (go.tag == "Nathan")
+                BaseCharacterClass characterScript = go.GetComponent<BaseCharacterClass>();
+                participantList.Add(characterScript);
+                heroList.Add(characterScript);
+                participantDictionary.Add(characterScript, go);
+                foreach (KeyValuePair<string, int> heroHealth in healthManager)
                 {
-                    Nathan nathan = new Nathan();
-                    participantList.Add(nathan);
-                    heroList.Add(nathan);
-                    participantDictionary.Add(nathan, go);
+                    Debug.Log(heroHealth + " " + characterScript);
+                    if (heroHealth.Key == characterScript.CharacterClassName)
+                    {
+                        characterScript.Health = heroHealth.Value;
+                    }
                 }
-                else if (go.tag == "Jackson")
-                {
-                    Jackson jackson = new Jackson();
-                    participantList.Add(jackson);
-                    heroList.Add(jackson);
-                    participantDictionary.Add(jackson, go);
-                }
+                go.GetComponent<Animator>().SetTrigger("Idle");
+                Transform healthBarHolder = go.transform.Find("AnimationsContainer/Canvas/HealthBar");
+                healthBar = healthBarHolder.gameObject.GetComponent<Image>();
+                healthBar.fillAmount = (float)characterScript.Health / (float)characterScript.MaxHealth;
             }
+            checkForDeath();
             foreach (EnemyLayout enem in gameLoop.battleEncounterInstance.listOfEnemies)
             {
                 GameObject go = Instantiate(enem.enemyPrefab, enem.enemyPosition, Quaternion.identity) as GameObject;
@@ -180,21 +206,10 @@ public class BattleSystemStateMachine : MonoBehaviour {
                 Transform colliderTransform = go.transform.Find("AnimationsContainer/collider");
                 colliderTransform.localPosition = enem.enemyColliderPosition;
                 colliderTransform.localScale = enem.enemyColliderScale;
-                // As enemies are created, add a tag and call here. Eventually find a better way to do this maybe...
-                if (go.tag == "BasicEnemy")
-                {
-                    BasicEnemy enemy = new BasicEnemy();
-                    participantList.Add(enemy);
-                    enemyList.Add(enemy);
-                    participantDictionary.Add(enemy, go);
-                }
-                else if (go.tag == "MageEnemy")
-                {
-                    MageEnemy enemy = new MageEnemy();
-                    participantList.Add(enemy);
-                    enemyList.Add(enemy);
-                    participantDictionary.Add(enemy, go);
-                }
+                BaseCharacterClass characterScript = go.GetComponent<BaseCharacterClass>();
+                participantList.Add(characterScript);
+                enemyList.Add(characterScript);
+                participantDictionary.Add(characterScript, go);
             }
 
             foreach (BaseCharacterClass hero in participantList)
@@ -274,13 +289,50 @@ public class BattleSystemStateMachine : MonoBehaviour {
     public void winActions()
     {
         Debug.Log("You won!");
+        gameLoop.isRunning = true;
+        BaseCharacterClass mcScript = playerPrefab.GetComponent<BaseCharacterClass>();
+        if (mcScript.Health <= 0)
+        {
+            mcScript.Health = 1;
+            mcScript.isDead = false;
+            playerPrefab.GetComponent<Animator>().SetTrigger("Idle");
+        }
+        foreach (BaseCharacterClass hero in heroList)
+        {
+            if (healthManager.ContainsKey(hero.CharacterClassName))
+            {
+                healthManager[hero.CharacterClassName] = hero.Health;
+            }
+            else
+            {
+                healthManager.Add(hero.CharacterClassName, hero.Health);
+            }
+        }
+        foreach (KeyValuePair<BaseCharacterClass, GameObject> character in participantDictionary)
+        {
+            if (character.Value.gameObject == playerPrefab)
+            {
+                continue;
+            }
+            else
+            {
+                Destroy(character.Value.gameObject);
+            }
+        }
+        participantDictionary.Clear();
+        participantList.Clear();
+        heroList.Clear();
+        enemyList.Clear();
+        currentHero = 0;
         listCreationFinished = false;
+        currentState = BattleStates.INTRO;
     }
 
     public void loseActions()
     {
-        Debug.Log("You lost!");
         listCreationFinished = false;
+        currentState = BattleStates.INTRO;
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
     public void checkForDeath()
@@ -292,24 +344,25 @@ public class BattleSystemStateMachine : MonoBehaviour {
                 character.Key.isDead = true;
                 character.Key.Health = 0;
                 Debug.Log(character.Key.CharacterClassName + " has died.");
-                Destroy(character.Value.gameObject);
+                character.Value.gameObject.GetComponent<Animator>().SetTrigger("Death");
             }
         }
-        foreach (BaseCharacterClass character in participantList)
-        {
-            if (character.Health <= 0 && !character.isDead)
-            {
-                character.isDead = true;
-                character.Health = 0;
-                if (character.CharacterClassName == "Your Name")
-                {
-                    Animator playerAnim = playerPrefab.GetComponent<Animator>();
-                    playerAnim.SetTrigger("Dead");
-                }
-                Debug.Log(character.CharacterClassName + " has died.");
-            }
-        }
+        //foreach (BaseCharacterClass character in participantList)
+        //{
+        //    if (character.Health <= 0 && !character.isDead)
+        //    {
+        //        character.isDead = true;
+        //        character.Health = 0;
+        //        if (character.CharacterClassName == "Your Name")
+        //        {
+        //            Animator playerAnim = playerPrefab.GetComponent<Animator>();
+        //            playerAnim.SetTrigger("Dead");
+        //        }
+        //        Debug.Log(character.CharacterClassName + " has died.");
+        //    }
+        //}
     }
+
     public void checkForEnd()
     {
         bool allEnemyDead = enemyList.All(living => living.isDead == true);
@@ -383,7 +436,6 @@ public class BattleSystemStateMachine : MonoBehaviour {
             randomHero = UnityEngine.Random.Range(0, heroList.Count);
         }
         else {
-            Debug.Log(participantList[currentHero].proceedNext);
             moveMethod();
             if (!moveIsFinished)
             {
@@ -411,7 +463,6 @@ public class BattleSystemStateMachine : MonoBehaviour {
                 {
                     if (heroList[randomHero] == pair.Key)
                     {
-                        Debug.Log("match");
                         Animator heroAnimator = participantDictionary[pair.Key].GetComponent<Animator>();
                         heroAnimator.SetTrigger("TakeDamage");
                         TextMesh textMesh = participantDictionary[pair.Key].GetComponentInChildren<TextMesh>(true);
