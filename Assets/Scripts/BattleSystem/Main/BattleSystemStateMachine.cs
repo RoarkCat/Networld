@@ -262,11 +262,11 @@ public class BattleSystemStateMachine : MonoBehaviour {
                 int randomEnemy = UnityEngine.Random.Range(0, enemyList.Count);
                 if (useMove01 == true)
                 {
-                    executeHeroMove(participantList[currentHero].Move01, participantList[currentHero].Move01Damage, ref useMove01, null);
+                    executeHeroMove(participantList[currentHero].Move01, ref useMove01, "Move01");
                 }
                 else if (useMove02 == true)
                 {
-                    executeHeroMove(participantList[currentHero].Move02, participantList[currentHero].Move02Damage, ref useMove02, null);
+                    executeHeroMove(participantList[currentHero].Move02, ref useMove02, "Move02");
                 }
                 else if (useUltimate == true)
                 {
@@ -385,7 +385,7 @@ public class BattleSystemStateMachine : MonoBehaviour {
         }
     }
 
-    public void executeHeroMove(Action moveMethod, int moveDamage, ref bool moveBeingUsed, string moveName)
+    public void executeHeroMove(Action moveMethod, ref bool moveBeingUsed, string moveName)
     {
         // moveName is for the animator trigger.
         moveMethod();
@@ -401,11 +401,17 @@ public class BattleSystemStateMachine : MonoBehaviour {
                     {
                         if (damageDict.ContainsKey(pair.Key))
                         {
-                            damageDict[pair.Key] = damageDict[pair.Key] + moveDamage;
+                            Debug.Log(moveName);
+                            if (moveName == "Move01") { damageDict[pair.Key] = damageDict[pair.Key] + participantList[currentHero].Move01Damage; }
+                            else if (moveName == "Move02") { damageDict[pair.Key] = damageDict[pair.Key] + participantList[currentHero].Move02Damage; }
+                            else if (moveName == "Move03") { damageDict[pair.Key] = damageDict[pair.Key] + participantList[currentHero].UltimateDamage; }
                         }
                         else
                         {
-                            damageDict.Add(pair.Key, moveDamage);
+                            Debug.Log(moveName);
+                            if (moveName == "Move01") { damageDict.Add(pair.Key, participantList[currentHero].Move01Damage); }
+                            else if (moveName == "Move02") { damageDict.Add(pair.Key, participantList[currentHero].Move02Damage); }
+                            else if (moveName == "Move03") { damageDict.Add(pair.Key, participantList[currentHero].UltimateDamage); }
                         }
                     }
                 }

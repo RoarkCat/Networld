@@ -32,7 +32,7 @@ public class Nathan : BaseCharacterClass
         {
             if (hbox.isHit)
             {
-                damagedEnemies.Add(hbox.hitboxGameObject);
+                //damagedEnemies.Add(hbox.hitboxGameObject);
             }
         }
         Debug.Log("Nathan move 1!");
@@ -48,7 +48,7 @@ public class Nathan : BaseCharacterClass
         {
             if (hbox.isHit)
             {
-                damagedEnemies.Add(hbox.hitboxGameObject);
+                //damagedEnemies.Add(hbox.hitboxGameObject);
             }
         }
         Debug.Log("Nathan move 2!");
@@ -64,7 +64,7 @@ public class Nathan : BaseCharacterClass
         {
             if (hbox.isHit)
             {
-                damagedEnemies.Add(hbox.hitboxGameObject);
+                //damagedEnemies.Add(hbox.hitboxGameObject);
             }
         }
         Debug.Log("Nathan ultimate!!");

@@ -32,7 +32,7 @@ public class Jackson : BaseCharacterClass
         {
             if (hbox.isHit)
             {
-                damagedEnemies.Add(hbox.hitboxGameObject);
+                //damagedEnemies.Add(hbox.hitboxGameObject);
             }
         }
         proceedNext = false;
@@ -47,7 +47,7 @@ public class Jackson : BaseCharacterClass
         {
             if (hbox.isHit)
             {
-                damagedEnemies.Add(hbox.hitboxGameObject);
+                //damagedEnemies.Add(hbox.hitboxGameObject);
             }
         }
         Debug.Log("Jackson move 2!");
@@ -63,7 +63,7 @@ public class Jackson : BaseCharacterClass
         {
             if (hbox.isHit)
             {
-                damagedEnemies.Add(hbox.hitboxGameObject);
+                //damagedEnemies.Add(hbox.hitboxGameObject);
             }
         }
         Debug.Log("Jackson dank memes the enemy to oblivion!");
