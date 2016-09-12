@@ -45,8 +45,8 @@ public class MainCharacter : BaseCharacterClass {
         // Move02Damage changed by move02 method
         UltimateDamage = 80;
         Move01Name = "Lightning Strike";
-        Move02Name = "I dunno";
-        UltimateName = "Ultimatummmm";
+        Move02Name = "Hammer Time";
+        UltimateName = "Ultimate";
         UltimateLimitRequirement = 50;
     }
 
@@ -62,7 +62,7 @@ public class MainCharacter : BaseCharacterClass {
             randomMoveSpeed = UnityEngine.Random.Range(0.3f, 0.7f);
             timerBarHolder.SetActive(true);
             clonedBolts = new List<GameObject>();
-            damagedEnemies = new List<GameObject>();
+            damageDict = new Dictionary<BaseCharacterClass, int>();
             foreach (Transform child in movingBar.transform)
             {
                 child.gameObject.SetActive(true);
@@ -79,13 +79,22 @@ public class MainCharacter : BaseCharacterClass {
             boltsCalled++;
             foreach (GameObject damagedEnemy in newBolt.GetComponentInChildren<HitboxCollision>().hitboxGameObject)
             {
-                damagedEnemies.Add(damagedEnemy);
+                if (damageDict.ContainsKey(damagedEnemy.GetComponent<BaseCharacterClass>()))
+                {
+                    damageDict[damagedEnemy.GetComponent<BaseCharacterClass>()] = damageDict[damagedEnemy.GetComponent<BaseCharacterClass>()] + Move01Damage;
+                }
+                else
+                {
+                    damageDict.Add(damagedEnemy.GetComponent<BaseCharacterClass>(), Move01Damage);
+                }
             }
         }
         if (Time.time - startTimeTrack >= move01Time || boltsCalled >= 3)
         {
             foreach (GameObject bolts in clonedBolts)
             {
+                movingBar.GetComponentInChildren<HitboxCollision>().hitboxGameObject.Clear();
+                bolts.GetComponentInChildren<HitboxCollision>().hitboxGameObject.Clear();
                 MonoBehaviour.Destroy(bolts);
             }
             movingBar.transform.localPosition = Vector3.zero;
@@ -135,10 +144,10 @@ public class MainCharacter : BaseCharacterClass {
         {
             startTimeTrack = Time.time;
             moveFirstPass = false;
-            damagedEnemies = new List<GameObject>();
             damageBarHolder.SetActive(true);
             timerBarHolder.SetActive(true);
-           // Move02Damage = 200;
+            damageDict = new Dictionary<BaseCharacterClass, int>();
+            // Move02Damage = 200;
         }
         if (Input.GetKeyDown("space"))
         {
@@ -165,13 +174,13 @@ public class MainCharacter : BaseCharacterClass {
                         else
                         {
                             currentClosest = pair.Value.transform.position;
-                            damagedEnemies.Clear();
-                            damagedEnemies.Add(pair.Value);
+                            Move02Damage = (int)((damageBuildUp / maxDamage) * 200);
+                            damageDict.Clear();
+                            damageDict.Add(pair.Key, Move02Damage);
                         }
                     }
                 }
             }
-            Move02Damage = (int)((damageBuildUp / maxDamage) * 200);
             damageBuildUp = 0;
             damageBar.fillAmount = 0;
             damageBarHolder.SetActive(false);

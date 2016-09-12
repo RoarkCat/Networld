@@ -13,18 +13,19 @@ public class HealthItem : MonoBehaviour {
     {
         if (playerObject.tag == "Player")
         {
+            Debug.Log("Restoring " + healthRestore + " health.");
             playerObject.GetComponentInChildren<BaseCharacterClass>().Health += healthRestore;
             if (playerObject.GetComponentInChildren<BaseCharacterClass>().Health > playerObject.GetComponentInChildren<BaseCharacterClass>().MaxHealth)
             {
                 playerObject.GetComponentInChildren<BaseCharacterClass>().Health = playerObject.GetComponentInChildren<BaseCharacterClass>().MaxHealth;
             }
+            battleSystemRef.healthManager[playerObject.GetComponentInChildren<BaseCharacterClass>().CharacterClassName] = playerObject.GetComponentInChildren<BaseCharacterClass>().Health;
             Transform healthBarHolder = playerObject.transform.Find("Player/AnimationsContainer/Canvas/HealthBar");
             Image healthBar = healthBarHolder.gameObject.GetComponent<Image>();
             healthBar.fillAmount = (float)playerObject.GetComponentInChildren<BaseCharacterClass>().Health / (float)playerObject.GetComponentInChildren<BaseCharacterClass>().MaxHealth;
 
             incrementAllyHealth();
 
-            Debug.Log("Destroying health item");
             Destroy(gameObject);
         }
     }
@@ -35,7 +36,6 @@ public class HealthItem : MonoBehaviour {
         foreach (PartyLayout ally in gameLoop.partyManager.listOfAllies)
         {
             BaseCharacterClass currentChar = ally.friendlyPrefab.GetComponent<BaseCharacterClass>();
-            Debug.Log(gameLoop.partyManager.listOfAllies);
             List<string> keys = new List<string>(battleSystemRef.healthManager.Keys);
             foreach (string key in keys)
             {

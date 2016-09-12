@@ -96,6 +96,7 @@
     <Compile Include="Assets\Scripts\Managers\GlobalPartyHealthManager.cs" />
     <Compile Include="Assets\Scripts\Managers\LimitBreakCollection.cs" />
     <Compile Include="Assets\Scripts\Managers\PartyManager.cs" />
+    <Compile Include="Assets\Scripts\Objects\ConcentricCircleTarget.cs" />
     <Compile Include="Assets\Scripts\Objects\HealthItem.cs" />
     <Compile Include="Assets\Scripts\Objects\HitboxCollision.cs" />
     <Compile Include="Assets\Scripts\Objects\LimitBreakItem.cs" />

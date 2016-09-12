@@ -21,6 +21,7 @@ public class Nathan : BaseCharacterClass
         Move02Name = "Nathan Move 02";
         UltimateName = "Nathan Ultimate";
         UltimateLimitRequirement = 50;
+        damageDict = new Dictionary<BaseCharacterClass, int>();
     }
 
     public override void Move01()

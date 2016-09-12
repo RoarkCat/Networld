@@ -347,20 +347,6 @@ public class BattleSystemStateMachine : MonoBehaviour {
                 character.Value.gameObject.GetComponent<Animator>().SetTrigger("Death");
             }
         }
-        //foreach (BaseCharacterClass character in participantList)
-        //{
-        //    if (character.Health <= 0 && !character.isDead)
-        //    {
-        //        character.isDead = true;
-        //        character.Health = 0;
-        //        if (character.CharacterClassName == "Your Name")
-        //        {
-        //            Animator playerAnim = playerPrefab.GetComponent<Animator>();
-        //            playerAnim.SetTrigger("Dead");
-        //        }
-        //        Debug.Log(character.CharacterClassName + " has died.");
-        //    }
-        //}
     }
 
     public void checkForEnd()
@@ -392,31 +378,7 @@ public class BattleSystemStateMachine : MonoBehaviour {
         if (participantList[currentHero].proceedNext == false)
         {
             moveBeingUsed = false;
-            Dictionary<BaseCharacterClass, int> damageDict = new Dictionary<BaseCharacterClass, int>();
-            foreach (GameObject enemy in participantList[currentHero].damagedEnemies)
-            {
-                foreach (KeyValuePair<BaseCharacterClass, GameObject> pair in participantDictionary)
-                {
-                    if (pair.Value == enemy)
-                    {
-                        if (damageDict.ContainsKey(pair.Key))
-                        {
-                            Debug.Log(moveName);
-                            if (moveName == "Move01") { damageDict[pair.Key] = damageDict[pair.Key] + participantList[currentHero].Move01Damage; }
-                            else if (moveName == "Move02") { damageDict[pair.Key] = damageDict[pair.Key] + participantList[currentHero].Move02Damage; }
-                            else if (moveName == "Move03") { damageDict[pair.Key] = damageDict[pair.Key] + participantList[currentHero].UltimateDamage; }
-                        }
-                        else
-                        {
-                            Debug.Log(moveName);
-                            if (moveName == "Move01") { damageDict.Add(pair.Key, participantList[currentHero].Move01Damage); }
-                            else if (moveName == "Move02") { damageDict.Add(pair.Key, participantList[currentHero].Move02Damage); }
-                            else if (moveName == "Move03") { damageDict.Add(pair.Key, participantList[currentHero].UltimateDamage); }
-                        }
-                    }
-                }
-            }
-            foreach (KeyValuePair<BaseCharacterClass, int> pair in damageDict)
+            foreach (KeyValuePair<BaseCharacterClass, int> pair in participantList[currentHero].damageDict)
             {
                 pair.Key.Health = pair.Key.Health - pair.Value;
                 Animator animator = participantDictionary[pair.Key].GetComponent<Animator>();

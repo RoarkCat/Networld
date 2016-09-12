@@ -27,6 +27,7 @@ public abstract class BaseCharacterClass : MonoBehaviour {
     public int UltimateLimitRequirement { get; set; }
 
     public List<GameObject> damagedEnemies { get; set; }
+    public Dictionary<BaseCharacterClass, int> damageDict { get; set; }
     public bool moveIsFinished { get; set; }
 
     public float rightEdgeOfScreen = 16.5f;
