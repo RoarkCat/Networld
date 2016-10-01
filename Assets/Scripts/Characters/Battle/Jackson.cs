@@ -104,7 +104,6 @@ public class Jackson : BaseCharacterClass
         }
         if (battleSystem.enemyList[currentEnemy].isDead)
         {
-            Debug.Log("adding " + currentEnemy);
             currentEnemy++;
         }
         else {
