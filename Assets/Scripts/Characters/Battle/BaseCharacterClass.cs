@@ -30,7 +30,7 @@ public abstract class BaseCharacterClass : MonoBehaviour {
     public Dictionary<BaseCharacterClass, int> damageDict { get; set; }
     public bool moveIsFinished { get; set; }
 
-    public float rightEdgeOfScreen = 16.5f;
+    public float rightEdgeOfScreen = 13.36f;
     public float leftEdgeOfScreen = -10f;
 
 }

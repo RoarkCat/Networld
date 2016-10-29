@@ -24,7 +24,7 @@ using System.Collections;
         public Animator runnerStart()
         {
             rb = GetComponent<Rigidbody>();
-            runner = GetComponentInChildren<Animator>();
+            //runner = GetComponentInChildren<Animator>();
             return runner;
         }
 

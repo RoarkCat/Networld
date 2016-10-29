@@ -151,7 +151,7 @@ public class BattleSystemStateMachine : MonoBehaviour {
             else if (GUILayout.Button(participantList[currentHero].UltimateName) && participantList[currentHero].proceedNext == false && participantList[currentHero].UltimateLimitRequirement <= limitBreakCollection.limitBreakCurrent)
             {
                 limitBreakCollection.limitBreakCurrent -= participantList[currentHero].UltimateLimitRequirement;
-                Transform limitBarHolder = playerPrefab.transform.parent.Find("OrthoCamera/Canvas/LimitBreakBar");
+                Transform limitBarHolder = playerPrefab.transform.parent.Find("Canvas/LimitBreakBar");
                 Image limitBar = limitBarHolder.gameObject.GetComponent<Image>();
                 limitBar.fillAmount = (float)playerPrefab.transform.parent.GetComponent<LimitBreakCollection>().limitBreakCurrent / (float)playerPrefab.transform.parent.GetComponent<LimitBreakCollection>().limitBreakMax;
                 useUltimate = true;
@@ -270,17 +270,7 @@ public class BattleSystemStateMachine : MonoBehaviour {
                 }
                 else if (useUltimate == true)
                 {
-                    participantList[currentHero].Ultimate();
-                    if (participantList[currentHero].proceedNext == false)
-                    {
-                        useUltimate = false;
-                        enemyList[randomEnemy].Health = enemyList[randomEnemy].Health - participantList[currentHero].UltimateDamage;
-                        Debug.Log(participantList[currentHero].CharacterClassName + " deals " + participantList[currentHero].UltimateDamage.ToString() + " damage to " + enemyList[randomEnemy].CharacterClassName + ". " + enemyList[randomEnemy].Health.ToString() + " health left.");
-                        currentHero++;
-                        checkForDeath();
-                        checkForEnd();
-                        resetTrackerCount();
-                    }
+                    executeHeroMove(participantList[currentHero].Ultimate, ref useUltimate, "Ultimate");
                 }
             }
         }
@@ -290,6 +280,8 @@ public class BattleSystemStateMachine : MonoBehaviour {
     {
         Debug.Log("You won!");
         gameLoop.isRunning = true;
+        gameLoop.cameraAnimator.SetBool("BattleState", false);
+        gameLoop.cameraAnimator.SetBool("RunnerState", true);
         BaseCharacterClass mcScript = playerPrefab.GetComponent<BaseCharacterClass>();
         if (mcScript.Health <= 0)
         {

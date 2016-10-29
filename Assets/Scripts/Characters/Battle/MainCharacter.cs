@@ -116,7 +116,7 @@ public class MainCharacter : BaseCharacterClass {
                 Vector3 barPosition = movingBar.transform.localPosition;
                 barPosition = new Vector3(barPosition.x + randomMoveSpeed, barPosition.y, barPosition.z);
                 movingBar.transform.localPosition = barPosition;
-                if (movingBar.transform.localPosition.x >= rightEdgeOfScreen)
+                if (movingBar.transform.localPosition.x >= 13.36f)
                 {
                     moveRight = false;
                     moveLeft = true;
@@ -127,7 +127,7 @@ public class MainCharacter : BaseCharacterClass {
                 Vector3 barPosition = movingBar.transform.localPosition;
                 barPosition = new Vector3(barPosition.x - randomMoveSpeed, barPosition.y, barPosition.z);
                 movingBar.transform.localPosition = barPosition;
-                if (movingBar.transform.localPosition.x <= leftEdgeOfScreen)
+                if (movingBar.transform.localPosition.x <= -4f)
                 {
                     moveLeft = false;
                     moveRight = true;

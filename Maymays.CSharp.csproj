@@ -90,6 +90,7 @@
     <Compile Include="Assets\Scripts\Characters\Battle\MainCharacter.cs" />
     <Compile Include="Assets\Scripts\Characters\Battle\Nathan.cs" />
     <Compile Include="Assets\Scripts\Characters\Enemies\BasicEnemy.cs" />
+    <Compile Include="Assets\Scripts\Characters\Enemies\BossJackson.cs" />
     <Compile Include="Assets\Scripts\Characters\Enemies\MageEnemy.cs" />
     <Compile Include="Assets\Scripts\Characters\Runner\BaseRunner.cs" />
     <Compile Include="Assets\Scripts\Managers\GameLoop.cs" />

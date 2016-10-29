@@ -8,6 +8,7 @@ public class GameLoop : MonoBehaviour {
     public bool isRunning = true;
     public EncounterScript battleEncounterInstance;
     public PartyManager partyManager;
+    public Animator cameraAnimator;
     private LimitBreakCollection limitBreakCollection = new LimitBreakCollection();
 
     void Start()
@@ -52,6 +53,8 @@ public class GameLoop : MonoBehaviour {
     {
         if (other.tag == "BattleZone")
         {
+            cameraAnimator.SetBool("BattleState", true);
+            cameraAnimator.SetBool("RunnerState", false);
             isRunning = false;
             battleEncounterInstance = other.gameObject.GetComponent<EncounterScript>();
         }
