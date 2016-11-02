@@ -93,10 +93,13 @@
     <Compile Include="Assets\Scripts\Characters\Enemies\BossJackson.cs" />
     <Compile Include="Assets\Scripts\Characters\Enemies\MageEnemy.cs" />
     <Compile Include="Assets\Scripts\Characters\Runner\BaseRunner.cs" />
+    <Compile Include="Assets\Scripts\Managers\CheckForAnimationFinish.cs" />
     <Compile Include="Assets\Scripts\Managers\GameLoop.cs" />
     <Compile Include="Assets\Scripts\Managers\GlobalPartyHealthManager.cs" />
     <Compile Include="Assets\Scripts\Managers\LimitBreakCollection.cs" />
     <Compile Include="Assets\Scripts\Managers\PartyManager.cs" />
+    <Compile Include="Assets\Scripts\Managers\QTEChoiceClass.cs" />
+    <Compile Include="Assets\Scripts\Managers\QTEManager.cs" />
     <Compile Include="Assets\Scripts\Objects\ConcentricCircleTarget.cs" />
     <Compile Include="Assets\Scripts\Objects\HealthItem.cs" />
     <Compile Include="Assets\Scripts\Objects\HitboxCollision.cs" />

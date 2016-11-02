@@ -58,7 +58,7 @@ public class Jackson : BaseCharacterClass
     private GameObject typableTextHolder;
     private GameObject newTypableHolder;
     private List<GameObject> lettersToType;
-    private float timePerEnemy = 2f;
+    private float timePerEnemy = 3f;
     private int numOfAliveEnemies = 0;
 
     public Jackson()
@@ -73,8 +73,8 @@ public class Jackson : BaseCharacterClass
         Move02Damage = 75;
         UltimateDamage = 200;
         Move01Name = "Hidden Missile";
-        Move02Name = "Jackson Move 02";
-        UltimateName = "Jackson Ultimate";
+        Move02Name = "Arrow Shot";
+        UltimateName = "Ultimate (30)";
         UltimateLimitRequirement = 30;
     }
 
@@ -397,6 +397,7 @@ public class Jackson : BaseCharacterClass
                     newTypableHolder = Instantiate(typableTextHolder, Vector3.zero, Quaternion.identity);
                     newTypableHolder.transform.parent = gameLoop.battleEncounterInstance.transform;
                     newTypableHolder.transform.localPosition = positionSpawnList[currentEnemy];
+                    newTypableHolder.transform.localPosition = new Vector3(newTypableHolder.transform.localPosition.x, newTypableHolder.transform.localPosition.y, -6);
                     GameObject placeholderLetter = newTypableHolder.transform.Find("PlaceholderLetter").gameObject;
                     float xTextPosition = -(chosenWord.Length / 4);
                     foreach (char letter in chosenWord)

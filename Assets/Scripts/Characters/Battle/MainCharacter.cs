@@ -6,6 +6,8 @@ using UnityEngine.UI;
 
 public class MainCharacter : BaseCharacterClass {
 
+    private GameObject playerController;
+
     private float keyPress = 0;
     private float timeToPress = 2.5f;
     private float startTimeTrack = 0;
@@ -33,6 +35,24 @@ public class MainCharacter : BaseCharacterClass {
     public GameObject damageBarHolder;
     public BattleSystemStateMachine battleSystem;
 
+    // stuff for ultimate
+    private int currentLetterName = 0;
+    private int currentLetterPhrase = 0;
+    private bool typingName = true;
+    private bool typingPhrase = false;
+    private bool firstCycle = true;
+    private int randomInt = 0;
+    private string chosenWord = "";
+    private GameObject typableTextHolder;
+    private GameObject newTypableHolder;
+    private List<GameObject> lettersToType;
+    private float timePerEnemy = 3f;
+    private int numOfAliveEnemies = 0;
+    private int currentEnemy = 0;
+    private List<string> potentialButtons;
+    private List<Vector3> positionSpawnList = new List<Vector3>();
+    public GameLoop gameLoop;
+
     public MainCharacter()
     {
         CharacterClassName = "Your Name";
@@ -43,11 +63,18 @@ public class MainCharacter : BaseCharacterClass {
         isEnemy = false;
         Move01Damage = 50;
         // Move02Damage changed by move02 method
-        UltimateDamage = 80;
+        UltimateDamage = 200;
         Move01Name = "Lightning Strike";
         Move02Name = "Hammer Time";
-        UltimateName = "Ultimate";
-        UltimateLimitRequirement = 50;
+        UltimateName = "Ultimate (30)";
+        UltimateLimitRequirement = 30;
+    }
+
+    void Start()
+    {
+        playerController = GameObject.Find("PlayerController");
+        gameLoop = playerController.GetComponent<GameLoop>();
+        typableTextHolder = playerController.transform.Find("BattleMovesObjects/TypableTextHolder").gameObject;
     }
 
     public override void Move01()
@@ -203,28 +230,163 @@ public class MainCharacter : BaseCharacterClass {
         proceedNext = true;
         if (moveFirstPass)
         {
+            battleSystem = playerController.GetComponent<BattleSystemStateMachine>();
             startTimeTrack = Time.time;
             moveFirstPass = false;
+            currentEnemy = 0;
+            currentLetterName = 0;
+            currentLetterPhrase = 0;
+            numOfAliveEnemies = 0;
+            damageDict = new Dictionary<BaseCharacterClass, int>();
+            lettersToType = new List<GameObject>();
+            timerBarHolder.SetActive(true);
+            potentialButtons = new List<string>(new string[] { "n'ghaagl", "ph'shugg", "ph'nglui", "mglw'nafh", "wgah'nagl" });
+            positionSpawnList.Clear();
+            foreach (EnemyLayout enem in gameLoop.battleEncounterInstance.listOfEnemies)
+            {
+                positionSpawnList.Add(enem.enemyPosition + enem.enemyColliderPosition);
+            }
+            foreach (BaseCharacterClass enemy in battleSystem.enemyList)
+            {
+                if (enemy.isDead)
+                {
+                    continue;
+                }
+                else
+                {
+                    numOfAliveEnemies++;
+                }
+            }
         }
-        if (Input.GetKeyDown("space"))
+        if (battleSystem.enemyList[currentEnemy].isDead)
         {
-            keyPress++;
+            currentEnemy++;
         }
-        if (Time.time - startTimeTrack >= timeToPress)
+        else {
+            // add to damage dict
+            if (firstCycle)
+            {
+                randomInt = UnityEngine.Random.Range(0, potentialButtons.Count);
+                chosenWord = potentialButtons[randomInt];
+                firstCycle = false;
+                newTypableHolder = Instantiate(typableTextHolder, Vector3.zero, Quaternion.identity);
+                newTypableHolder.transform.parent = gameLoop.battleEncounterInstance.transform;
+                newTypableHolder.transform.localPosition = positionSpawnList[currentEnemy];
+                newTypableHolder.transform.localPosition = new Vector3(newTypableHolder.transform.localPosition.x, newTypableHolder.transform.localPosition.y, -6);
+                GameObject placeholderLetter = newTypableHolder.transform.Find("PlaceholderLetter").gameObject;
+                float xTextPosition = -(battleSystem.enemyList[currentEnemy].CharacterClassName.Length / 4);
+                foreach (char letter in battleSystem.enemyList[currentEnemy].CharacterClassName)
+                {
+                    GameObject newLetter = Instantiate(placeholderLetter, Vector3.zero, Quaternion.identity);
+                    newLetter.transform.parent = newTypableHolder.transform;
+                    newLetter.GetComponent<TextMesh>().text = letter.ToString();
+                    newLetter.transform.localPosition = new Vector3(xTextPosition, 0, 0);
+                    xTextPosition += 0.5f;
+                    lettersToType.Add(newLetter);
+                }
+                foreach (Transform child in newTypableHolder.transform)
+                {
+                    child.gameObject.SetActive(true);
+                }
+            }
+            // account for spaces
+            if (battleSystem.enemyList[currentEnemy].CharacterClassName[currentLetterName].ToString() == " " && typingName)
+            {
+                if (Input.GetKeyDown("space"))
+                {
+                    currentLetterName++;
+                    if (currentLetterName >= battleSystem.enemyList[currentEnemy].CharacterClassName.Length)
+                    {
+                        currentLetterName = 0;
+                        Destroy(newTypableHolder);
+                        typingName = false;
+                        typingPhrase = true;
+                    }
+                }
+            }
+            // end account for spaces
+            else if (Input.GetKeyDown(battleSystem.enemyList[currentEnemy].CharacterClassName[currentLetterName].ToString().ToLower()) && typingName)
+            {
+                lettersToType[currentLetterName].GetComponent<TextMesh>().color = Color.red;
+                currentLetterName++;
+                if (currentLetterName >= battleSystem.enemyList[currentEnemy].CharacterClassName.Length)
+                {
+                    currentLetterName = 0;
+                    Destroy(newTypableHolder);
+                    lettersToType.Clear();
+                    typingName = false;
+                    typingPhrase = true;
+                    newTypableHolder = Instantiate(typableTextHolder, Vector3.zero, Quaternion.identity);
+                    newTypableHolder.transform.parent = gameLoop.battleEncounterInstance.transform;
+                    newTypableHolder.transform.localPosition = positionSpawnList[currentEnemy];
+                    newTypableHolder.transform.localPosition = new Vector3(newTypableHolder.transform.localPosition.x, newTypableHolder.transform.localPosition.y, -6);
+                    GameObject placeholderLetter = newTypableHolder.transform.Find("PlaceholderLetter").gameObject;
+                    float xTextPosition = -(chosenWord.Length / 4);
+                    foreach (char letter in chosenWord)
+                    {
+                        GameObject newLetter = Instantiate(placeholderLetter, Vector3.zero, Quaternion.identity);
+                        newLetter.transform.parent = newTypableHolder.transform;
+                        newLetter.GetComponent<TextMesh>().text = letter.ToString();
+                        newLetter.transform.localPosition = new Vector3(xTextPosition, 0, 0);
+                        xTextPosition += 0.5f;
+                        lettersToType.Add(newLetter);
+                    }
+                    foreach (Transform child in newTypableHolder.transform)
+                    {
+                        child.gameObject.SetActive(true);
+                    }
+                }
+            }
+            else if (Input.GetKeyDown(chosenWord[currentLetterPhrase].ToString().ToLower()) && typingPhrase)
+            {
+                lettersToType[currentLetterPhrase].GetComponent<TextMesh>().color = Color.red;
+                currentLetterPhrase++;
+                if (currentLetterPhrase >= chosenWord.Length)
+                {
+                    damageDict.Add(battleSystem.enemyList[currentEnemy], UltimateDamage);
+                    Destroy(newTypableHolder);
+                    currentLetterPhrase = 0;
+                    lettersToType.Clear();
+                    typingPhrase = false;
+                    typingName = true;
+                    firstCycle = true;
+                    currentEnemy++;
+                }
+            }
+        }
+        if (currentEnemy >= gameLoop.battleEncounterInstance.listOfEnemies.Count)
         {
-            Debug.Log(keyPress);
-            keyPress = 0;
+            timerBarHolder.SetActive(false);
+            timerBar.fillAmount = 1;
+            typingName = true;
+            typingPhrase = false;
             moveFirstPass = true;
             proceedNext = false;
         }
-        HitboxCollision[] checkHitbox = MonoBehaviour.FindObjectsOfType(typeof(HitboxCollision)) as HitboxCollision[];
-        foreach (HitboxCollision hbox in checkHitbox)
+        else if (Time.time - startTimeTrack >= timePerEnemy * numOfAliveEnemies)
         {
-            if (hbox.isHit)
+            Debug.Log(currentLetterName + " : " + currentLetterPhrase);
+            float percentageDamage = 0;
+            if (typingName)
             {
-                //damagedEnemies.Add(hbox.hitboxGameObject);
+                percentageDamage = (currentLetterName) / ((float)battleSystem.enemyList[currentEnemy].CharacterClassName.Length + (float)chosenWord.Length);
             }
+            else if (typingPhrase)
+            {
+                percentageDamage = ((float)battleSystem.enemyList[currentEnemy].CharacterClassName.Length + currentLetterPhrase) / ((float)battleSystem.enemyList[currentEnemy].CharacterClassName.Length + (float)chosenWord.Length);
+            }
+            //float percentageDamage = (currentLetterName + currentLetterPhrase) / ((float)battleSystem.enemyList[currentEnemy].CharacterClassName.Length + (float)chosenWord.Length);
+            float damageToDeal = Mathf.Round(UltimateDamage * percentageDamage);
+            Debug.Log(percentageDamage + " : " + damageToDeal);
+            damageDict.Add(battleSystem.enemyList[currentEnemy], (int)damageToDeal);
+            Destroy(newTypableHolder);
+            timerBarHolder.SetActive(false);
+            timerBar.fillAmount = 1;
+            typingName = true;
+            typingPhrase = false;
+            moveFirstPass = true;
+            proceedNext = false;
         }
-        damagedEnemies.Clear();
+        timerBar.fillAmount = ((timePerEnemy * numOfAliveEnemies) - (Time.time - startTimeTrack)) / (timePerEnemy * numOfAliveEnemies);
     }
 }

@@ -21,6 +21,8 @@ public class BattleSystemStateMachine : MonoBehaviour {
         WIN
     }
 
+    public GameObject moveNamesHolder;
+    public TextMesh Move01Text, Move02Text, UltimateText;
     public GameLoop gameLoop;
     public GameObject playerPrefab;
     public int currentHero;
@@ -54,8 +56,58 @@ public class BattleSystemStateMachine : MonoBehaviour {
         limitBreakCollection = this.GetComponent<LimitBreakCollection>();
 	}
 
-    public void battleUpdate () {
-	    switch (currentState)
+    public void battleUpdate ()
+    {
+        if (currentState == BattleStates.INTRO)
+        {
+            if (!firstPassPosition)
+            {
+                playerStartTravelTime = Time.time;
+                playerTravelDistance = Vector3.Distance(playerPrefab.transform.parent.position, gameLoop.battleEncounterInstance.playerPosition.position);
+                firstPassPosition = true;
+            }
+            float distCovered = (Time.time - playerStartTravelTime) * playerTravelSpeed;
+            float fracTraveled = distCovered / playerTravelDistance;
+            playerPrefab.transform.parent.position = Vector3.Lerp(playerPrefab.transform.parent.position, gameLoop.battleEncounterInstance.playerPosition.position, fracTraveled);
+            if (playerPrefab.transform.parent.position == gameLoop.battleEncounterInstance.playerPosition.position)
+            {
+                currentState = BattleStates.START;
+                firstPassPosition = false;
+            }
+        }
+        else if (currentState == BattleStates.START)
+        {
+            moveNamesHolder.SetActive(true);
+            Move01Text.text = participantList[currentHero].Move01Name;
+            Move02Text.text = participantList[currentHero].Move02Name;
+            UltimateText.text = participantList[currentHero].UltimateName;
+            if (Input.GetButtonDown("a") && participantList[currentHero].proceedNext == false)
+            {
+                useMove01 = true;
+            }
+            else if (Input.GetButtonDown("s") && participantList[currentHero].proceedNext == false)
+            {
+                useMove02 = true;
+            }
+            else if (Input.GetButtonDown("d") && participantList[currentHero].proceedNext == false)
+            {
+                if (participantList[currentHero].UltimateLimitRequirement <= limitBreakCollection.limitBreakCurrent)
+                {
+                    limitBreakCollection.limitBreakCurrent -= participantList[currentHero].UltimateLimitRequirement;
+                    Transform limitBarHolder = playerPrefab.transform.parent.Find("Canvas/LimitBreakBar");
+                    Image limitBar = limitBarHolder.gameObject.GetComponent<Image>();
+                    limitBar.fillAmount = (float)playerPrefab.transform.parent.GetComponent<LimitBreakCollection>().limitBreakCurrent / (float)playerPrefab.transform.parent.GetComponent<LimitBreakCollection>().limitBreakMax;
+                    useUltimate = true;
+                }
+                else
+                {
+                    Debug.Log(participantList[currentHero].UltimateLimitRequirement + " ::: " + limitBreakCollection.limitBreakCurrent);
+                    moveNamesHolder.GetComponent<Animator>().SetTrigger("fire");
+                }
+            }
+        }
+
+        switch (currentState)
         {
             case (BattleStates.INTRO):
                 // Handle taking hero from running state to battle state.
@@ -118,46 +170,6 @@ public class BattleSystemStateMachine : MonoBehaviour {
                 break;
         }
 	}
-
-    public void battleOnGUI()
-    {
-        if (currentState == BattleStates.INTRO)
-        {
-            if (!firstPassPosition)
-            {
-                playerStartTravelTime = Time.time;
-                playerTravelDistance = Vector3.Distance(playerPrefab.transform.parent.position, gameLoop.battleEncounterInstance.playerPosition.position);
-                firstPassPosition = true;
-            }
-            float distCovered = (Time.time - playerStartTravelTime) * playerTravelSpeed;
-            float fracTraveled = distCovered / playerTravelDistance;
-            playerPrefab.transform.parent.position = Vector3.Lerp(playerPrefab.transform.parent.position, gameLoop.battleEncounterInstance.playerPosition.position, fracTraveled);
-            if (playerPrefab.transform.parent.position == gameLoop.battleEncounterInstance.playerPosition.position)
-            {
-                currentState = BattleStates.START;
-                firstPassPosition = false;
-            }
-        }
-        else if (currentState == BattleStates.START)
-        {
-            if (GUILayout.Button(participantList[currentHero].Move01Name) && participantList[currentHero].proceedNext == false)
-            {
-                useMove01 = true;
-            }
-            else if (GUILayout.Button(participantList[currentHero].Move02Name) && participantList[currentHero].proceedNext == false)
-            {
-                useMove02 = true;
-            }
-            else if (GUILayout.Button(participantList[currentHero].UltimateName) && participantList[currentHero].proceedNext == false && participantList[currentHero].UltimateLimitRequirement <= limitBreakCollection.limitBreakCurrent)
-            {
-                limitBreakCollection.limitBreakCurrent -= participantList[currentHero].UltimateLimitRequirement;
-                Transform limitBarHolder = playerPrefab.transform.parent.Find("Canvas/LimitBreakBar");
-                Image limitBar = limitBarHolder.gameObject.GetComponent<Image>();
-                limitBar.fillAmount = (float)playerPrefab.transform.parent.GetComponent<LimitBreakCollection>().limitBreakCurrent / (float)playerPrefab.transform.parent.GetComponent<LimitBreakCollection>().limitBreakMax;
-                useUltimate = true;
-            }
-        }
-    }
 
     public void introActions()
     {
@@ -279,7 +291,9 @@ public class BattleSystemStateMachine : MonoBehaviour {
     public void winActions()
     {
         Debug.Log("You won!");
+        moveNamesHolder.SetActive(false);
         gameLoop.isRunning = true;
+        gameLoop.isBattle = false;
         gameLoop.cameraAnimator.SetBool("BattleState", false);
         gameLoop.cameraAnimator.SetBool("RunnerState", true);
         BaseCharacterClass mcScript = playerPrefab.GetComponent<BaseCharacterClass>();
