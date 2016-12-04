@@ -58,7 +58,7 @@ public class Jackson : BaseCharacterClass
     private GameObject typableTextHolder;
     private GameObject newTypableHolder;
     private List<GameObject> lettersToType;
-    private float timePerEnemy = 3f;
+    private float timePerEnemy = 3.5f;
     private int numOfAliveEnemies = 0;
 
     public Jackson()
@@ -70,11 +70,11 @@ public class Jackson : BaseCharacterClass
         TurnPriority = 2;
         isEnemy = false;
         Move01Damage = 80;
-        Move02Damage = 75;
+        Move02Damage = 100;
         UltimateDamage = 200;
-        Move01Name = "Hidden Missile";
-        Move02Name = "Arrow Shot";
-        UltimateName = "Ultimate (30)";
+        Move01Name = "Hidden Missile [type]";
+        Move02Name = "Arrow Shot [space/up+down]";
+        UltimateName = "Ultimate (30) [type]";
         UltimateLimitRequirement = 30;
     }
 
@@ -179,7 +179,7 @@ public class Jackson : BaseCharacterClass
         {
             startTimeTrack = Time.time;
             moveFirstPass = false;
-            arrowContainer.transform.localPosition = Vector3.zero;
+            arrowContainer.transform.localPosition = new Vector3(-4.6f, -0.8f, 0f);
             randomRotationValue = UnityEngine.Random.Range(10f, 20f)/10000;
             timerBarHolder.SetActive(true);
             clonedBolts = new List<GameObject>();
@@ -205,9 +205,9 @@ public class Jackson : BaseCharacterClass
         {
             arrowScale.x += scaleGrowthValue;
             arrowContainer.transform.localScale = arrowScale;
-            if (arrowContainer.transform.localScale.x >= 3.2f)
+            if (arrowContainer.transform.localScale.x >= 3.6f)
             {
-                arrowScale.x = 3.2f;
+                arrowScale.x = 3.6f;
                 arrowContainer.transform.localScale = arrowScale;
             }
         }
@@ -230,7 +230,7 @@ public class Jackson : BaseCharacterClass
             foreach (GameObject damagedEnemy in arrowContainer.GetComponentInChildren<HitboxCollision>().hitboxGameObject)
             {
                 float targetPositionAsPercentage = chosenTargetPoint / distanceFromBegToEnd;
-                float barPositionAsPercentage = (arrowContainer.transform.localScale.x - 1) / 2.2f;
+                float barPositionAsPercentage = (arrowContainer.transform.localScale.x - 1) / 2.6f;
                 float percentageDifference = Mathf.Abs(targetPositionAsPercentage - barPositionAsPercentage);
                 int move02AdjustedDamage = 0;
                 if (barPositionAsPercentage >= .99f) { move02AdjustedDamage = 0; }
@@ -298,7 +298,7 @@ public class Jackson : BaseCharacterClass
                 }
             }
         }
-        targetBarBackfill.GetComponent<Image>().fillAmount = (arrowContainer.transform.localScale.x - 1) / 2.2f;
+        targetBarBackfill.GetComponent<Image>().fillAmount = (arrowContainer.transform.localScale.x - 1) / 2.6f;
         timerBar.fillAmount = (move02Time - (Time.time - startTimeTrack)) / move02Time;
     }
 
@@ -437,6 +437,7 @@ public class Jackson : BaseCharacterClass
             timerBarHolder.SetActive(false);
             timerBar.fillAmount = 1;
             typingName = true;
+            firstCycle = true;
             typingPhrase = false;
             moveFirstPass = true;
             proceedNext = false;
@@ -461,6 +462,7 @@ public class Jackson : BaseCharacterClass
             timerBarHolder.SetActive(false);
             timerBar.fillAmount = 1;
             typingName = true;
+            firstCycle = true;
             typingPhrase = false;
             moveFirstPass = true;
             proceedNext = false;

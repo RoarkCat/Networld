@@ -223,10 +223,10 @@ public class BattleSystemStateMachine : MonoBehaviour {
                 enemyList.Add(characterScript);
                 participantDictionary.Add(characterScript, go);
             }
-
+            participantList = participantList.OrderBy(o => o.TurnPriority).ToList();
             foreach (BaseCharacterClass hero in participantList)
             {
-                Debug.Log(hero.CharacterClassName + ":" + hero.Health.ToString());
+                Debug.Log(hero.CharacterClassName + ":" + hero.TurnPriority);
             }
             listCreationFinished = true;
         }

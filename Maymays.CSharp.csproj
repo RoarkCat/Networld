@@ -101,6 +101,7 @@
     <Compile Include="Assets\Scripts\Managers\QTEChoiceClass.cs" />
     <Compile Include="Assets\Scripts\Managers\QTEManager.cs" />
     <Compile Include="Assets\Scripts\Objects\ConcentricCircleTarget.cs" />
+    <Compile Include="Assets\Scripts\Objects\EndLevel.cs" />
     <Compile Include="Assets\Scripts\Objects\HealthItem.cs" />
     <Compile Include="Assets\Scripts\Objects\HitboxCollision.cs" />
     <Compile Include="Assets\Scripts\Objects\LimitBreakItem.cs" />

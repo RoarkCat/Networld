@@ -46,7 +46,7 @@ public class MainCharacter : BaseCharacterClass {
     private GameObject typableTextHolder;
     private GameObject newTypableHolder;
     private List<GameObject> lettersToType;
-    private float timePerEnemy = 3f;
+    private float timePerEnemy = 3.5f;
     private int numOfAliveEnemies = 0;
     private int currentEnemy = 0;
     private List<string> potentialButtons;
@@ -61,12 +61,12 @@ public class MainCharacter : BaseCharacterClass {
         MaxHealth = 100;
         TurnPriority = 1;
         isEnemy = false;
-        Move01Damage = 50;
+        Move01Damage = 60;
         // Move02Damage changed by move02 method
         UltimateDamage = 200;
-        Move01Name = "Lightning Strike";
-        Move02Name = "Hammer Time";
-        UltimateName = "Ultimate (30)";
+        Move01Name = "Lightning Strike [space]";
+        Move02Name = "Hammer Time [space]";
+        UltimateName = "Ultimate (30)[type]";
         UltimateLimitRequirement = 30;
     }
 
@@ -178,7 +178,7 @@ public class MainCharacter : BaseCharacterClass {
         }
         if (Input.GetKeyDown("space"))
         {
-            damageBuildUp += 13;
+            damageBuildUp += 14;
             if (damageBuildUp >= maxDamage)
             {
                 damageBuildUp = maxDamage;
@@ -359,6 +359,7 @@ public class MainCharacter : BaseCharacterClass {
             timerBarHolder.SetActive(false);
             timerBar.fillAmount = 1;
             typingName = true;
+            firstCycle = true;
             typingPhrase = false;
             moveFirstPass = true;
             proceedNext = false;
@@ -383,6 +384,7 @@ public class MainCharacter : BaseCharacterClass {
             timerBarHolder.SetActive(false);
             timerBar.fillAmount = 1;
             typingName = true;
+            firstCycle = true;
             typingPhrase = false;
             moveFirstPass = true;
             proceedNext = false;

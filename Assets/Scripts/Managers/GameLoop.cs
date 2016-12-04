@@ -1,9 +1,11 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.SceneManagement;
 
 public class GameLoop : MonoBehaviour {
 
     public BaseRunner runnerControl;
+    public TextMesh timerText;
     public BattleSystemStateMachine battleControl;
     public QTEManager qteControl;
     public bool isRunning = true;
@@ -36,6 +38,7 @@ public class GameLoop : MonoBehaviour {
         {
             battleControl.battleUpdate();
         }
+        timerText.text = ((int)Time.time).ToString();
     }
 
     void FixedUpdate()
@@ -76,6 +79,10 @@ public class GameLoop : MonoBehaviour {
             {
                 isRunning = false;
             }
+        }
+        else if (other.tag == "KillPlayer")
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
     }
 }

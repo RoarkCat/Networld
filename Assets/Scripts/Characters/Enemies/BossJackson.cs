@@ -11,11 +11,11 @@ public class BossJackson : BaseCharacterClass
         CharacterClassDescription = "This a boss.";
         Health = 600;
         MaxHealth = 600;
-        TurnPriority = 10;
+        TurnPriority = 1;
         isEnemy = true;
-        Move01Damage = 50;
-        Move02Damage = 80;
-        UltimateDamage = 100;
+        Move01Damage = 40;
+        Move02Damage = 60;
+        UltimateDamage = 80;
         proceedNext = true;
     }
 
