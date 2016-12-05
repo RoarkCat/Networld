@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -14,6 +15,7 @@ using System.Collections.Generic;
         public float acceleration;
         public int numberOfJumps = 2;
         public float teleDistance = 5;
+        public GameLoop gameLoop;
 
         private bool grounded;
         private bool canJump;
@@ -24,6 +26,11 @@ using System.Collections.Generic;
         private bool isHoldingBack = false;
         private int trackJump = 0;
         private Rigidbody rb;
+        private Image dashBar01;
+        private Image dashBar02;
+        private int dashTrack = 2;
+        private float dashCooldown = 1;
+        private float dashTimeTrack = 0;
         public Animator runner;
 
         public float initialJumpImpulse = 5f;
@@ -37,6 +44,8 @@ using System.Collections.Generic;
         public Animator runnerStart()
         {
             rb = GetComponent<Rigidbody>();
+            dashBar01 = transform.Find("Player/AnimationsContainer/Canvas/DashBar01").GetComponent<Image>();
+            dashBar02 = transform.Find("Player/AnimationsContainer/Canvas/DashBar02").GetComponent<Image>();
             return runner;
         }
 
@@ -107,7 +116,7 @@ using System.Collections.Generic;
             }
 
             // Forward dash
-            if (Input.GetKeyDown(KeyCode.RightArrow))
+            if (Input.GetKeyDown(KeyCode.RightArrow) && dashTrack > 0)
             {
                 Ray checkForCollectionRay01 = new Ray(playerObjectTransform.position, Vector3.right);
                 Ray checkForCollectionRay02 = new Ray(topRaycastTransform.position, Vector3.right);
@@ -122,7 +131,41 @@ using System.Collections.Generic;
                 checkHitsForDashing(checkHitCollection02);
                 checkHitsForDashing(checkHitCollection03);
 
-            transform.localPosition = new Vector3(this.transform.localPosition.x + 4, this.transform.localPosition.y, 0f);
+                if (dashTrack != 1)
+                {
+                    dashTimeTrack = Time.time;
+                }
+                dashTrack--;
+                transform.localPosition = new Vector3(this.transform.localPosition.x + 4, this.transform.localPosition.y, 0f);
+            }
+            manageDashing();
+        }
+
+        void manageDashing()
+        {
+            float timeCountdown = (Time.time - dashTimeTrack) / dashCooldown;
+
+            if (dashTrack == 1)
+            {
+                dashBar02.fillAmount = timeCountdown;
+                dashBar02.color = Color.yellow;
+                if (timeCountdown >= 1)
+                {
+                    dashTrack++;
+                    dashBar02.color = Color.magenta;
+                }
+            }
+            else if (dashTrack == 0)
+            {
+                dashBar02.fillAmount = 0;
+                dashBar01.fillAmount = timeCountdown;
+                dashBar01.color = Color.yellow;
+                if (timeCountdown >= 1)
+                {
+                    dashTrack++;
+                    dashBar01.color = Color.magenta;
+                    dashTimeTrack = Time.time;
+                }
             }
         }
 
@@ -205,6 +248,7 @@ using System.Collections.Generic;
             runner.SetBool("Grounded Running", false);
         }
 
+        // add checks for hitting objects while dashing here
         void checkHitsForDashing(RaycastHit[] checkHits)
         {
             for (int i = 0; i < checkHits.Length; i++)
@@ -219,6 +263,10 @@ using System.Collections.Generic;
                 {
                     hit.transform.GetComponent<HealthItem>().CheckForRaycastHit(GetComponent<Collider>());
                     Debug.Log("Hit health collection");
+                }
+                else if (hit.collider.tag == "BattleZone")
+                {
+                    gameLoop.initiateBattle(hit.collider);
                 }
             }
         }

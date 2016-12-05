@@ -65,11 +65,7 @@ public class GameLoop : MonoBehaviour {
     {
         if (other.tag == "BattleZone")
         {
-            cameraAnimator.SetBool("BattleState", true);
-            cameraAnimator.SetBool("RunnerState", false);
-            isRunning = false;
-            isBattle = true;
-            battleEncounterInstance = other.gameObject.GetComponent<EncounterScript>();
+            initiateBattle(other);
         }
         else if (other.tag == "QTEZone")
         {
@@ -84,5 +80,14 @@ public class GameLoop : MonoBehaviour {
         {
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
+    }
+
+    public void initiateBattle(Collider other)
+    {
+        cameraAnimator.SetBool("BattleState", true);
+        cameraAnimator.SetBool("RunnerState", false);
+        isRunning = false;
+        isBattle = true;
+        battleEncounterInstance = other.gameObject.GetComponent<EncounterScript>();
     }
 }
