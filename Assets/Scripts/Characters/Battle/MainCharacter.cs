@@ -73,7 +73,7 @@ public class MainCharacter : BaseCharacterClass {
     void Start()
     {
         playerController = GameObject.Find("PlayerController");
-        gameLoop = playerController.GetComponent<GameLoop>();
+        gameLoop = GameObject.Find("GameManager").GetComponent<GameLoop>();
         typableTextHolder = playerController.transform.Find("BattleMovesObjects/TypableTextHolder").gameObject;
     }
 

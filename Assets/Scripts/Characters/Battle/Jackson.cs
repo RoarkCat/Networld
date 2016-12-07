@@ -81,7 +81,7 @@ public class Jackson : BaseCharacterClass
     void Start()
     {
         playerController = GameObject.Find("PlayerController");
-        gameLoop = playerController.GetComponent<GameLoop>();
+        gameLoop = GameObject.Find("GameManager").GetComponent<GameLoop>();
         GameObject timerBarGO = playerController.transform.Find("Canvas/TimerBarHolder/TimerBar").gameObject;
         timerBar = timerBarGO.GetComponent<Image>();
         timerBarHolder = playerController.transform.Find("Canvas/TimerBarHolder").gameObject;
@@ -100,7 +100,7 @@ public class Jackson : BaseCharacterClass
         proceedNext = true;
         if (moveFirstPass)
         {
-            battleSystem = playerController.GetComponent<BattleSystemStateMachine>();
+            battleSystem = GameObject.Find("GameManager").GetComponent<BattleSystemStateMachine>();
             startTimeTrack = Time.time;
             clonedTargets = new List<GameObject>();
             damagedEnemies = new List<GameObject>();

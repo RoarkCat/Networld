@@ -12,7 +12,7 @@ public class QTEManager : MonoBehaviour {
     private bool firstPassPosition;
     private bool firstPassOverall = true;
     private bool killPlayerFirstPass = true;
-    private GameObject playerController;
+    //private GameObject playerController;
     private Image timerBar;
     private GameObject timerBarHolder;
     private float playerStartTravelTime;
@@ -41,10 +41,10 @@ public class QTEManager : MonoBehaviour {
         if (firstPassOverall)
         {
             killPlayerFirstPass = true;
-            playerController = GameObject.Find("PlayerController");
-            GameObject timerBarGO = playerController.transform.Find("Canvas/TimerBarHolder/TimerBar").gameObject;
+            //playerController = GameObject.Find("PlayerController");
+            GameObject timerBarGO = transform.Find("PlayerContainer/PlayerController/Canvas/TimerBarHolder/TimerBar").gameObject;
             timerBar = timerBarGO.GetComponent<Image>();
-            timerBarHolder = playerController.transform.Find("Canvas/TimerBarHolder").gameObject;
+            timerBarHolder = transform.Find("PlayerContainer/PlayerController/Canvas/TimerBarHolder").gameObject;
             timerBarHolder.SetActive(true);
             startTimeTrack = Time.time;
             firstPassOverall = false;

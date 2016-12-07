@@ -14,35 +14,27 @@ public class HealthItem : MonoBehaviour {
     {
         if (playerObject.tag == "Player")
         {
-            Debug.Log("Restoring " + healthRestore + " health.");
-            playerObject.GetComponentInChildren<BaseCharacterClass>().Health += healthRestore;
-            if (playerObject.GetComponentInChildren<BaseCharacterClass>().Health > playerObject.GetComponentInChildren<BaseCharacterClass>().MaxHealth)
-            {
-                playerObject.GetComponentInChildren<BaseCharacterClass>().Health = playerObject.GetComponentInChildren<BaseCharacterClass>().MaxHealth;
-            }
-            battleSystemRef.healthManager[playerObject.GetComponentInChildren<BaseCharacterClass>().CharacterClassName] = playerObject.GetComponentInChildren<BaseCharacterClass>().Health;
-            Transform healthBarHolder = playerObject.transform.Find("Player/AnimationsContainer/Canvas/HealthBar");
-            Image healthBar = healthBarHolder.gameObject.GetComponent<Image>();
-            healthBar.fillAmount = (float)playerObject.GetComponentInChildren<BaseCharacterClass>().Health / (float)playerObject.GetComponentInChildren<BaseCharacterClass>().MaxHealth;
-
-            incrementAllyHealth();
-
-            Destroy(gameObject);
+            CheckForRaycastHit();
         }
     }
 
-    public void CheckForRaycastHit(Collider playerObject)
+    public void CheckForRaycastHit()
     {
+        GameObject go = GameObject.Find("GameManager");
         Debug.Log("Restoring " + healthRestore + " health.");
-        playerObject.GetComponentInChildren<BaseCharacterClass>().Health += healthRestore;
-        if (playerObject.GetComponentInChildren<BaseCharacterClass>().Health > playerObject.GetComponentInChildren<BaseCharacterClass>().MaxHealth)
+        go.GetComponentInChildren<BaseCharacterClass>().Health += healthRestore;
+        if (go.GetComponentInChildren<BaseCharacterClass>().Health > go.GetComponentInChildren<BaseCharacterClass>().MaxHealth)
         {
-            playerObject.GetComponentInChildren<BaseCharacterClass>().Health = playerObject.GetComponentInChildren<BaseCharacterClass>().MaxHealth;
+            go.GetComponentInChildren<BaseCharacterClass>().Health = go.GetComponentInChildren<BaseCharacterClass>().MaxHealth;
         }
-        battleSystemRef.healthManager[playerObject.GetComponentInChildren<BaseCharacterClass>().CharacterClassName] = playerObject.GetComponentInChildren<BaseCharacterClass>().Health;
-        Transform healthBarHolder = playerObject.transform.Find("Player/AnimationsContainer/Canvas/HealthBar");
+        battleSystemRef.healthManager[go.GetComponentInChildren<BaseCharacterClass>().CharacterClassName] = go.GetComponentInChildren<BaseCharacterClass>().Health;
+        Transform healthBarHolder = go.transform.Find("PlayerContainer/PlayerController/Player/AnimationsContainer/Canvas/HealthBar");
+        if (healthBarHolder == null)
+        {
+            healthBarHolder = go.transform.Find("PlayerContainer(Clone)/PlayerController/Player/AnimationsContainer/Canvas/HealthBar");
+        }
         Image healthBar = healthBarHolder.gameObject.GetComponent<Image>();
-        healthBar.fillAmount = (float)playerObject.GetComponentInChildren<BaseCharacterClass>().Health / (float)playerObject.GetComponentInChildren<BaseCharacterClass>().MaxHealth;
+        healthBar.fillAmount = (float)go.GetComponentInChildren<BaseCharacterClass>().Health / (float)go.GetComponentInChildren<BaseCharacterClass>().MaxHealth;
 
         incrementAllyHealth();
 

@@ -3,9 +3,6 @@ using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 
-
-    [RequireComponent(typeof(Rigidbody))]
-
     public class BaseRunner : MonoBehaviour
     {
         public Transform playerObjectTransform;
@@ -17,7 +14,7 @@ using System.Collections.Generic;
         public float teleDistance = 5;
         public GameLoop gameLoop;
 
-        private bool grounded;
+        public bool grounded;
         private bool canJump;
         private bool triggerJump = false;
         private bool triggerTele = false;
@@ -25,12 +22,14 @@ using System.Collections.Generic;
         private bool isFalling = false;
         private bool isHoldingBack = false;
         private int trackJump = 0;
-        private Rigidbody rb;
-        private Image dashBar01;
-        private Image dashBar02;
+        public Rigidbody rb;
+        public Image dashBar01;
+        public Image dashBar02;
         private int dashTrack = 2;
         private float dashCooldown = 1;
         private float dashTimeTrack = 0;
+        private float slowdownCutAmount = 2f;
+        private float downfallTimeTrack = 0;
         public Animator runner;
 
         public float initialJumpImpulse = 5f;
@@ -40,12 +39,17 @@ using System.Collections.Generic;
         public float fallVelocityDecay = 0;
         public float fallVelocityDecayRate = 1f;
         private float dynamicJumpImpulse;
+        public GameObject playerController;
 
         public Animator runnerStart()
         {
-            rb = GetComponent<Rigidbody>();
-            dashBar01 = transform.Find("Player/AnimationsContainer/Canvas/DashBar01").GetComponent<Image>();
-            dashBar02 = transform.Find("Player/AnimationsContainer/Canvas/DashBar02").GetComponent<Image>();
+            playerController = transform.Find("PlayerContainer/PlayerController").gameObject;
+            if (playerController != null)
+            {
+                rb = playerController.GetComponent<Rigidbody>();
+            }
+            dashBar01 = playerController.transform.Find("Player/AnimationsContainer/Canvas/DashBar01").GetComponent<Image>();
+            dashBar02 = playerController.transform.Find("Player/AnimationsContainer/Canvas/DashBar02").GetComponent<Image>();
             return runner;
         }
 
@@ -80,15 +84,15 @@ using System.Collections.Generic;
                 canJump = false;
                 trackJump = 0;
             }
-            // Tele down.
-            //if (Input.GetButtonDown("Tele") && !grounded)
-            //{
-            //    runner.SetBool("Grounded Running", false);
-            //    triggerTele = true;
-            //    runner.SetTrigger("Tele");
-            //}
+        // Tele down.
+        if (Input.GetButtonDown("Tele"))
+        {
+            rb.transform.gameObject.layer = 11;
+            downfallTimeTrack = Time.time;
+        }
+        if (Time.time - downfallTimeTrack >= 0.35f) { rb.transform.gameObject.layer = 8; }
 
-            if (grounded)
+        if (grounded)
             {
                 if (runner.GetBool("Grounded Running") == false)
                 {
@@ -136,7 +140,7 @@ using System.Collections.Generic;
                     dashTimeTrack = Time.time;
                 }
                 dashTrack--;
-                transform.localPosition = new Vector3(this.transform.localPosition.x + 4, this.transform.localPosition.y, 0f);
+                playerController.transform.localPosition = new Vector3(playerController.transform.localPosition.x + 4, playerController.transform.localPosition.y, 0f);
             }
             manageDashing();
         }
@@ -211,7 +215,7 @@ using System.Collections.Generic;
         // Constant move.
         if (isHoldingBack)
         {
-            rb.velocity = new Vector3(acceleration / 1.5f, rb.velocity.y, 0f);
+            rb.velocity = new Vector3(acceleration / slowdownCutAmount, rb.velocity.y, 0f);
         }
         else
         {
@@ -237,17 +241,6 @@ using System.Collections.Generic;
         rb.velocity = new Vector3(0, 0, 0);
         }
 
-        void OnCollisionEnter()
-        {
-            grounded = true;
-        }
-
-        void OnCollisionExit()
-        {
-            grounded = false;
-            runner.SetBool("Grounded Running", false);
-        }
-
         // add checks for hitting objects while dashing here
         void checkHitsForDashing(RaycastHit[] checkHits)
         {
@@ -256,17 +249,21 @@ using System.Collections.Generic;
                 RaycastHit hit = checkHits[i];
                 if (hit.collider.tag == "LimitCollection")
                 {
-                    hit.transform.GetComponent<LimitBreakItem>().CheckForRaycastHit(GetComponent<Collider>());
+                    hit.transform.GetComponent<LimitBreakItem>().CheckForRaycastHit();
                     Debug.Log("Hit limit collection");
                 }
                 else if (hit.collider.tag == "HealthCollection")
                 {
-                    hit.transform.GetComponent<HealthItem>().CheckForRaycastHit(GetComponent<Collider>());
+                    hit.transform.GetComponent<HealthItem>().CheckForRaycastHit();
                     Debug.Log("Hit health collection");
                 }
                 else if (hit.collider.tag == "BattleZone")
                 {
                     gameLoop.initiateBattle(hit.collider);
+                }
+                else if (hit.collider.tag == "QTEZone")
+                {
+                    gameLoop.initiateQTE(hit.collider);
                 }
             }
         }

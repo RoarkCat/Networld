@@ -15,6 +15,7 @@ public class GameLoop : MonoBehaviour {
     public QTEChoiceClass qteInstance;
     public PartyManager partyManager;
     public Animator cameraAnimator;
+    public GameManager gameManager;
     private LimitBreakCollection limitBreakCollection = new LimitBreakCollection();
 
     void Start()
@@ -61,27 +62,6 @@ public class GameLoop : MonoBehaviour {
         }
     }
 
-    void OnTriggerEnter(Collider other)
-    {
-        if (other.tag == "BattleZone")
-        {
-            initiateBattle(other);
-        }
-        else if (other.tag == "QTEZone")
-        {
-            qteInstance = other.gameObject.GetComponent<QTEChoiceClass>();
-            isQTE = true;
-            if (qteInstance.stopMovement)
-            {
-                isRunning = false;
-            }
-        }
-        else if (other.tag == "KillPlayer")
-        {
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-        }
-    }
-
     public void initiateBattle(Collider other)
     {
         cameraAnimator.SetBool("BattleState", true);
@@ -89,5 +69,15 @@ public class GameLoop : MonoBehaviour {
         isRunning = false;
         isBattle = true;
         battleEncounterInstance = other.gameObject.GetComponent<EncounterScript>();
+    }
+
+    public void initiateQTE(Collider other)
+    {
+        qteInstance = other.gameObject.GetComponent<QTEChoiceClass>();
+        isQTE = true;
+        if (qteInstance.stopMovement)
+        {
+            isRunning = false;
+        }
     }
 }

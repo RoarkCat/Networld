@@ -10,30 +10,26 @@ public class LimitBreakItem : MonoBehaviour {
     {
         if (playerObject.tag == "Player")
         {
-            playerObject.GetComponent<LimitBreakCollection>().limitBreakCurrent += limitBreakValue;
-            if (playerObject.GetComponent<LimitBreakCollection>().limitBreakCurrent > playerObject.GetComponent<LimitBreakCollection>().limitBreakMax)
-            {
-                playerObject.GetComponent<LimitBreakCollection>().limitBreakCurrent = playerObject.GetComponent<LimitBreakCollection>().limitBreakMax;
-            }
-            Transform limitBarHolder = playerObject.transform.Find("Canvas/LimitBreakBar");
-            Image limitBar = limitBarHolder.gameObject.GetComponent<Image>();
-            limitBar.fillAmount = (float)playerObject.GetComponent<LimitBreakCollection>().limitBreakCurrent / (float)playerObject.GetComponent<LimitBreakCollection>().limitBreakMax;
-            Debug.Log(playerObject.GetComponent<LimitBreakCollection>().limitBreakCurrent);
-            Destroy(this.gameObject);
+            CheckForRaycastHit();
         }
     }
 
-    public void CheckForRaycastHit(Collider playerObject)
+    public void CheckForRaycastHit()
     {
-        playerObject.GetComponent<LimitBreakCollection>().limitBreakCurrent += limitBreakValue;
-        if (playerObject.GetComponent<LimitBreakCollection>().limitBreakCurrent > playerObject.GetComponent<LimitBreakCollection>().limitBreakMax)
+        GameObject go = GameObject.Find("GameManager");
+        go.GetComponent<LimitBreakCollection>().limitBreakCurrent += limitBreakValue;
+        if (go.GetComponent<LimitBreakCollection>().limitBreakCurrent > go.GetComponent<LimitBreakCollection>().limitBreakMax)
         {
-            playerObject.GetComponent<LimitBreakCollection>().limitBreakCurrent = playerObject.GetComponent<LimitBreakCollection>().limitBreakMax;
+            go.GetComponent<LimitBreakCollection>().limitBreakCurrent = go.GetComponent<LimitBreakCollection>().limitBreakMax;
         }
-        Transform limitBarHolder = playerObject.transform.Find("Canvas/LimitBreakBar");
+        Transform limitBarHolder = go.transform.Find("PlayerContainer/PlayerController/Canvas/LimitBreakBar");
+        if (limitBarHolder == null)
+        {
+            limitBarHolder = go.transform.Find("PlayerContainer(Clone)/PlayerController/Canvas/LimitBreakBar");
+        }
         Image limitBar = limitBarHolder.gameObject.GetComponent<Image>();
-        limitBar.fillAmount = (float)playerObject.GetComponent<LimitBreakCollection>().limitBreakCurrent / (float)playerObject.GetComponent<LimitBreakCollection>().limitBreakMax;
-        Debug.Log(playerObject.GetComponent<LimitBreakCollection>().limitBreakCurrent);
+        limitBar.fillAmount = (float)go.GetComponent<LimitBreakCollection>().limitBreakCurrent / (float)go.GetComponent<LimitBreakCollection>().limitBreakMax;
+        Debug.Log(go.GetComponent<LimitBreakCollection>().limitBreakCurrent);
         Destroy(this.gameObject);
     }
 }

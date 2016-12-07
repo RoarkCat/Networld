@@ -7,7 +7,7 @@ public class CheckForBattleAnimEnd : MonoBehaviour {
 
 	public void fireMoveFinish ()
     {
-        GameObject go = GameObject.Find("PlayerController");
+        GameObject go = GameObject.Find("GameManager");
         battleSystem = go.GetComponent<BattleSystemStateMachine>();
         foreach (BaseCharacterClass participant in battleSystem.participantList) {
             participant.moveIsFinished = true;

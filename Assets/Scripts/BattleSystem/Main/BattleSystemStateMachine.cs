@@ -94,7 +94,7 @@ public class BattleSystemStateMachine : MonoBehaviour {
                 if (participantList[currentHero].UltimateLimitRequirement <= limitBreakCollection.limitBreakCurrent)
                 {
                     limitBreakCollection.limitBreakCurrent -= participantList[currentHero].UltimateLimitRequirement;
-                    Transform limitBarHolder = playerPrefab.transform.parent.Find("Canvas/LimitBreakBar");
+                    Transform limitBarHolder = playerPrefab.transform.parent.Find("PlayerContainer/PlayerController/Canvas/LimitBreakBar");
                     Image limitBar = limitBarHolder.gameObject.GetComponent<Image>();
                     limitBar.fillAmount = (float)playerPrefab.transform.parent.GetComponent<LimitBreakCollection>().limitBreakCurrent / (float)playerPrefab.transform.parent.GetComponent<LimitBreakCollection>().limitBreakMax;
                     useUltimate = true;
