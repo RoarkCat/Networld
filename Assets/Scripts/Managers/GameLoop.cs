@@ -16,6 +16,7 @@ public class GameLoop : MonoBehaviour {
     public PartyManager partyManager;
     public Animator cameraAnimator;
     public GameManager gameManager;
+    public CheckpointCheck checkpointCheck;
     private LimitBreakCollection limitBreakCollection = new LimitBreakCollection();
 
     void Start()

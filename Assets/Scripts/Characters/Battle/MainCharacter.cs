@@ -72,9 +72,9 @@ public class MainCharacter : BaseCharacterClass {
 
     void Start()
     {
-        playerController = GameObject.Find("PlayerController");
+        playerController = GameObject.Find("GameManager");
         gameLoop = GameObject.Find("GameManager").GetComponent<GameLoop>();
-        typableTextHolder = playerController.transform.Find("BattleMovesObjects/TypableTextHolder").gameObject;
+        typableTextHolder = playerController.transform.Find("PlayerContainer/PlayerController/BattleMovesObjects/TypableTextHolder").gameObject;
     }
 
     public override void Move01()

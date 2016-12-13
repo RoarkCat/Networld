@@ -307,7 +307,7 @@ public class Jackson : BaseCharacterClass
         proceedNext = true;
         if (moveFirstPass)
         {
-            battleSystem = playerController.GetComponent<BattleSystemStateMachine>();
+            battleSystem = playerController.transform.parent.transform.parent.GetComponent<BattleSystemStateMachine>();
             startTimeTrack = Time.time;
             moveFirstPass = false;
             currentEnemy = 0;

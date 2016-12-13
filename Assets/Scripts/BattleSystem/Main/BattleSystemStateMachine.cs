@@ -24,6 +24,7 @@ public class BattleSystemStateMachine : MonoBehaviour {
     public GameObject moveNamesHolder;
     public TextMesh Move01Text, Move02Text, UltimateText;
     public GameLoop gameLoop;
+    public GameObject gameManager;
     public GameObject playerPrefab;
     public int currentHero;
     private bool useMove01;
@@ -94,9 +95,9 @@ public class BattleSystemStateMachine : MonoBehaviour {
                 if (participantList[currentHero].UltimateLimitRequirement <= limitBreakCollection.limitBreakCurrent)
                 {
                     limitBreakCollection.limitBreakCurrent -= participantList[currentHero].UltimateLimitRequirement;
-                    Transform limitBarHolder = playerPrefab.transform.parent.Find("PlayerContainer/PlayerController/Canvas/LimitBreakBar");
+                    Transform limitBarHolder = playerPrefab.transform.parent.Find("Canvas/LimitBreakBar");
                     Image limitBar = limitBarHolder.gameObject.GetComponent<Image>();
-                    limitBar.fillAmount = (float)playerPrefab.transform.parent.GetComponent<LimitBreakCollection>().limitBreakCurrent / (float)playerPrefab.transform.parent.GetComponent<LimitBreakCollection>().limitBreakMax;
+                    limitBar.fillAmount = (float)gameManager.GetComponent<LimitBreakCollection>().limitBreakCurrent / (float)gameManager.GetComponent<LimitBreakCollection>().limitBreakMax;
                     useUltimate = true;
                 }
                 else
@@ -336,9 +337,31 @@ public class BattleSystemStateMachine : MonoBehaviour {
 
     public void loseActions()
     {
+        moveNamesHolder.SetActive(false);
+        gameLoop.isRunning = true;
+        gameLoop.isBattle = false;
+        gameLoop.cameraAnimator.SetBool("BattleState", false);
+        gameLoop.cameraAnimator.SetBool("RunnerState", true);
+        foreach (KeyValuePair<BaseCharacterClass, GameObject> character in participantDictionary)
+        {
+            if (character.Value.gameObject == playerPrefab)
+            {
+                continue;
+            }
+            else
+            {
+                Debug.Log("Destroying " + character.Value.name);
+                Destroy(character.Value.gameObject);
+            }
+        }
+        participantDictionary.Clear();
+        participantList.Clear();
+        heroList.Clear();
+        enemyList.Clear();
+        currentHero = 0;
         listCreationFinished = false;
         currentState = BattleStates.INTRO;
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        gameLoop.gameManager.ReloadCheckpoint();
     }
 
     public void checkForDeath()

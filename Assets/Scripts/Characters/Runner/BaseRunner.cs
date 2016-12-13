@@ -55,8 +55,8 @@ using System.Collections.Generic;
 
         public void runnerUpdate()
         {
-            // Jump
-            if (canJump && Input.GetButtonDown("Jump"))
+        // Jump
+        if (canJump && Input.GetButtonDown("Jump"))
             {
                 dynamicJumpImpulse = initialJumpImpulse;
                 currentTimeToHoldJump = Time.time;
@@ -264,6 +264,10 @@ using System.Collections.Generic;
                 else if (hit.collider.tag == "QTEZone")
                 {
                     gameLoop.initiateQTE(hit.collider);
+                }
+                else if (hit.collider.tag == "Checkpoint")
+                {
+                    hit.transform.GetComponent<CheckpointCheck>().feedDataToGameManager(playerObjectTransform.transform.parent.GetComponent<Collider>());
                 }
             }
         }

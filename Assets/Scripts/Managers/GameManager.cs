@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour {
 
@@ -15,12 +16,33 @@ public class GameManager : MonoBehaviour {
     public BattleSystemStateMachine battleSystem;
     public PartyManager partyManager;
 
+    private float healthLostOnDeath = 10f;
+
 	public void ReloadCheckpoint()
     {
         if (currentCheckpointSpawn != null && currentPlayerInstance != null)
         {
-            GameObject newPlayerInstance = Instantiate(currentPlayerInstance, currentCheckpointSpawn.position, Quaternion.identity, GameObject.Find("GameManager").transform);
+            // Check players health. Game over / reload the level if health is too low.
+            float currentPlayerHealth = currentPlayerInstance.transform.Find("PlayerController/Player").GetComponent<BaseCharacterClass>().Health - healthLostOnDeath;
+            Transform healthBarHolder = currentPlayerInstance.transform.Find("PlayerController/Player/AnimationsContainer/Canvas/HealthBar");
+            Image healthBar = healthBarHolder.gameObject.GetComponent<Image>();
+            healthBar.fillAmount = (float)currentPlayerInstance.transform.Find("PlayerController/Player").GetComponent<BaseCharacterClass>().Health / (float)currentPlayerInstance.transform.Find("PlayerController/Player").GetComponent<BaseCharacterClass>().MaxHealth;
 
+            if (currentPlayerHealth <= 0f)
+            {
+                // This is where we do game over / reload stuff.
+                SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+            }
+            battleSystem.healthManager[currentPlayerInstance.transform.Find("PlayerController/Player").GetComponent<BaseCharacterClass>().CharacterClassName] = currentPlayerInstance.transform.Find("PlayerController/Player").GetComponent<BaseCharacterClass>().Health;
+
+            // Respawn a copy of the player and change the names so that the new one has the old ones name.
+            GameObject newPlayerInstance = Instantiate(currentPlayerInstance, Vector3.zero, Quaternion.identity, GameObject.Find("GameManager").transform);
+            newPlayerInstance.transform.Find("PlayerController").transform.position = currentCheckpointSpawn.position;
+            currentPlayerInstance.name = currentPlayerInstance.name + "(destroying)";
+            int indexOfParenthesis = newPlayerInstance.name.IndexOf("(");
+            newPlayerInstance.name = newPlayerInstance.name.Substring(0, indexOfParenthesis);
+
+            // Manually relink a bunch of garbage that gets decoupled when destroying the player. Definitely a better way to do this.
             baseRunner.rb = newPlayerInstance.transform.Find("PlayerController").GetComponent<Rigidbody>();
             baseRunner.runner = newPlayerInstance.transform.Find("PlayerController/Player").GetComponent<Animator>();
             baseRunner.playerObjectTransform = newPlayerInstance.transform.Find("PlayerController/Player").transform;
@@ -38,8 +60,23 @@ public class GameManager : MonoBehaviour {
 
             partyManager.allyTransform = newPlayerInstance.transform.Find("PlayerController").transform;
 
+            foreach (PartyLayout ally in partyManager.listOfAllies)
+            {
+                if (newPlayerInstance.transform.Find("PlayerController/" + ally.friendlyPrefab.name + "(Clone)"))
+                {
+                    Destroy(newPlayerInstance.transform.Find("PlayerController/" + ally.friendlyPrefab.name + "(Clone)").gameObject);
+                }
+            }
+
+            newPlayerInstance.transform.Find("PlayerController/Player").GetComponent<BaseCharacterClass>().Health = (int)currentPlayerHealth;
+            healthBarHolder = newPlayerInstance.transform.Find("PlayerController/Player/AnimationsContainer/Canvas/HealthBar");
+            healthBar = healthBarHolder.gameObject.GetComponent<Image>();
+            healthBar.fillAmount = (float)newPlayerInstance.GetComponentInChildren<BaseCharacterClass>().Health / (float)newPlayerInstance.GetComponentInChildren<BaseCharacterClass>().MaxHealth;
+
             Destroy(currentPlayerInstance);
-            Debug.Log("reloading checkpoint");
+            newPlayerInstance.transform.Find("PlayerController/Player").transform.GetComponent<Animator>().SetBool("Grounded Running", true);
+            newPlayerInstance.transform.Find("PlayerController/Player").transform.GetComponent<Animator>().SetTrigger("FireEvent");
+            Debug.Log(newPlayerInstance.transform.Find("PlayerController/Player").GetComponent<BaseCharacterClass>().Health);
         }
     }
 }
