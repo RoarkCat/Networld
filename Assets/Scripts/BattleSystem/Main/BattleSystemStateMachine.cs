@@ -47,6 +47,7 @@ public class BattleSystemStateMachine : MonoBehaviour {
     private MainCharacter mc = new MainCharacter();
     private DetermineEnemies determineEnems = new DetermineEnemies();
     private LimitBreakCollection limitBreakCollection;
+    private BaseRunner baseRunner;
     private Image healthBar;
     public List<BaseCharacterClass> participantList = new List<BaseCharacterClass>();
     public List<BaseCharacterClass> enemyList = new List<BaseCharacterClass>();
@@ -55,6 +56,7 @@ public class BattleSystemStateMachine : MonoBehaviour {
     public void battleStart () {
         currentState = BattleStates.INTRO;
         limitBreakCollection = this.GetComponent<LimitBreakCollection>();
+        baseRunner = this.GetComponent<BaseRunner>();
 	}
 
     public void battleUpdate ()
@@ -170,7 +172,97 @@ public class BattleSystemStateMachine : MonoBehaviour {
                 winActions();
                 break;
         }
+
+        // Actions allowable to dodge abilities. IE: Jumping and position shifting
+        //if (participantList[currentHero].isEnemy)
+        {
+            // Jump
+            if (baseRunner.canJump && Input.GetButtonDown("Jump"))
+            {
+                baseRunner.dynamicJumpImpulse = baseRunner.initialJumpImpulse;
+                baseRunner.currentTimeToHoldJump = Time.time;
+                baseRunner.triggerJump = true;
+                baseRunner.letGoOfSpace = false;
+                baseRunner.trackJump++;
+                if (baseRunner.trackJump == 1)
+                {
+                    baseRunner.runner.SetBool("Grounded Running", false);
+                    baseRunner.runner.SetTrigger("Jump");
+                }
+                else if (baseRunner.trackJump == 2) baseRunner.runner.SetTrigger("DoubleJump");
+            }
+            if (Input.GetKeyUp("space"))
+            {
+                baseRunner.letGoOfSpace = true;
+                baseRunner.fallVelocityDecay = 0;
+                baseRunner.dynamicJumpImpulse = 0;
+                baseRunner.triggerJump = false;
+            }
+            // Double jump.
+            if (baseRunner.trackJump == baseRunner.numberOfJumps)
+            {
+                baseRunner.canJump = false;
+                baseRunner.trackJump = 0;
+            }
+            // Stuff when returning to ground.
+            if (baseRunner.grounded)
+            {
+                if (baseRunner.runner.GetBool("Grounded Running") == false)
+                {
+                    baseRunner.runner.SetTrigger("FireEvent");
+                    baseRunner.runner.SetBool("Grounded Running", true);
+                }
+                baseRunner.isFalling = false;
+                baseRunner.fallVelocityDecay = 0;
+            }
+        }
 	}
+
+    public void battleFixedUpdate()
+    {
+        if (baseRunner.triggerJump)
+        {
+            if (Input.GetKey("space"))
+            {
+                baseRunner.dynamicJumpImpulse += baseRunner.incrementingJumpImpulse;
+                if (baseRunner.currentTimeToHoldJump >= Time.time - baseRunner.allowedTimeToHoldJump)
+                {
+                    baseRunner.triggerJump = false;
+                }
+            }
+
+            if (baseRunner.trackJump < baseRunner.numberOfJumps)
+            {
+                baseRunner.rb.velocity = new Vector3(0, baseRunner.dynamicJumpImpulse, 0f);
+            }
+            else if (baseRunner.trackJump == baseRunner.numberOfJumps)
+            {
+                baseRunner.rb.velocity = new Vector3(0, baseRunner.rb.velocity.y + baseRunner.dynamicJumpImpulse, 0f);
+            }
+            //triggerJump = false;
+        }
+
+        if (baseRunner.letGoOfSpace)
+        {
+            baseRunner.fallVelocityDecay += baseRunner.fallVelocityDecayRate;
+            if (baseRunner.rb.velocity.y <= -20)
+            {
+                baseRunner.rb.velocity = new Vector3(0, baseRunner.rb.velocity.y, 0f);
+            }
+            else
+            {
+                baseRunner.rb.velocity = new Vector3(0, baseRunner.rb.velocity.y - baseRunner.fallVelocityDecay, 0f);
+                // using an easing function here actually just feels really bad, womp. maybe for jumping up? definitely not for down
+                //rb.velocity = new Vector3(rb.velocity.x, rb.velocity.y - Mathf.Pow(fallVelocityDecay / 1, 3), 0f);
+            }
+        }
+        // Grounded stuff. Reset jump to 0.
+        if (baseRunner.grounded && baseRunner.rb.velocity.y <= 0.05f)
+        {
+            baseRunner.canJump = true;
+            baseRunner.trackJump = 0;
+        }
+    }
 
     public void introActions()
     {

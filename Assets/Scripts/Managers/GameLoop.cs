@@ -52,6 +52,7 @@ public class GameLoop : MonoBehaviour {
         else
         {
             runnerControl.stopFixedUpdate();
+            battleControl.battleFixedUpdate();
         }
     }
 

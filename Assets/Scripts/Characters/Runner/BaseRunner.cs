@@ -15,13 +15,13 @@ using System.Collections.Generic;
         public GameLoop gameLoop;
 
         public bool grounded;
-        private bool canJump;
-        private bool triggerJump = false;
+        public bool canJump;
+        public bool triggerJump = false;
         private bool triggerTele = false;
-        private bool letGoOfSpace = false;
-        private bool isFalling = false;
+        public bool letGoOfSpace = false;
+        public bool isFalling = false;
         private bool isHoldingBack = false;
-        private int trackJump = 0;
+        public int trackJump = 0;
         public Rigidbody rb;
         public Image dashBar01;
         public Image dashBar02;
@@ -38,7 +38,7 @@ using System.Collections.Generic;
         public float currentTimeToHoldJump = 0;
         public float fallVelocityDecay = 0;
         public float fallVelocityDecayRate = 1f;
-        private float dynamicJumpImpulse;
+        public float dynamicJumpImpulse;
         public GameObject playerController;
 
         public Animator runnerStart()
@@ -238,7 +238,7 @@ using System.Collections.Generic;
 
         public void stopFixedUpdate()
         {
-        rb.velocity = new Vector3(0, 0, 0);
+            rb.velocity = new Vector3(0, rb.velocity.y, 0);
         }
 
         // add checks for hitting objects while dashing here
