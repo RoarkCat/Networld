@@ -6,9 +6,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System;
 
-public class BattleSystemStateMachine : MonoBehaviour {
+public class BattleSystemStateMachine : MonoBehaviour
+{
 
-    public enum BattleStates {
+    public enum BattleStates
+    {
         INTRO,
         START,
         PLAYERCHOICE,
@@ -27,12 +29,17 @@ public class BattleSystemStateMachine : MonoBehaviour {
     public GameObject gameManager;
     public GameObject playerPrefab;
     public int currentHero;
+    public int turnTracker = 0;
+    public bool dialogueConditionIsMet = false;
+    public CameraController camMovementScript;
+    public GameObject playerContainerObject;
     private bool useMove01;
     private bool useMove02;
     private bool useUltimate;
     private bool enemyMoveDecision;
     private bool listCreationFinished = false;
     private bool moveIsFinished;
+    private bool containerBackInOriginalPosition = false;
     private float randomMove;
     private int randomHero;
     private Animator animator;
@@ -40,6 +47,8 @@ public class BattleSystemStateMachine : MonoBehaviour {
     private float playerTravelDistance;
     private float playerStartTravelTime;
     private float playerTravelSpeed = 1.0f;
+    private bool beginningInitIsOver = false;
+    private int dashPositionTracker = 0;
 
     public BattleStates currentState;
     public Dictionary<BaseCharacterClass, GameObject> participantDictionary = new Dictionary<BaseCharacterClass, GameObject>();
@@ -49,135 +58,179 @@ public class BattleSystemStateMachine : MonoBehaviour {
     private LimitBreakCollection limitBreakCollection;
     private BaseRunner baseRunner;
     private Image healthBar;
+    private DialogueBattleClass[] battleConditions;
+    private DialogueBattleClass chosenDialogueEvent;
+    private DialogueManager dialogueManager;
     public List<BaseCharacterClass> participantList = new List<BaseCharacterClass>();
     public List<BaseCharacterClass> enemyList = new List<BaseCharacterClass>();
     public List<BaseCharacterClass> heroList = new List<BaseCharacterClass>();
 
-    public void battleStart () {
+    public void battleStart()
+    {
         currentState = BattleStates.INTRO;
         limitBreakCollection = this.GetComponent<LimitBreakCollection>();
         baseRunner = this.GetComponent<BaseRunner>();
-	}
+        dialogueManager = this.GetComponent<DialogueManager>();
 
-    public void battleUpdate ()
+    }
+
+    public void battleUpdate()
     {
-        if (currentState == BattleStates.INTRO)
+        battleConditions = gameLoop.battleEncounterInstance.gameObject.GetComponents<DialogueBattleClass>();
+
+        foreach (DialogueBattleClass eventParams in battleConditions)
         {
-            if (!firstPassPosition)
+            switch (eventParams.condition)
             {
-                playerStartTravelTime = Time.time;
-                playerTravelDistance = Vector3.Distance(playerPrefab.transform.parent.position, gameLoop.battleEncounterInstance.playerPosition.position);
-                firstPassPosition = true;
-            }
-            float distCovered = (Time.time - playerStartTravelTime) * playerTravelSpeed;
-            float fracTraveled = distCovered / playerTravelDistance;
-            playerPrefab.transform.parent.position = Vector3.Lerp(playerPrefab.transform.parent.position, gameLoop.battleEncounterInstance.playerPosition.position, fracTraveled);
-            if (playerPrefab.transform.parent.position == gameLoop.battleEncounterInstance.playerPosition.position)
-            {
-                currentState = BattleStates.START;
-                firstPassPosition = false;
-            }
-        }
-        else if (currentState == BattleStates.START)
-        {
-            moveNamesHolder.SetActive(true);
-            Move01Text.text = participantList[currentHero].Move01Name;
-            Move02Text.text = participantList[currentHero].Move02Name;
-            UltimateText.text = participantList[currentHero].UltimateName;
-            if (Input.GetButtonDown("a") && participantList[currentHero].proceedNext == false)
-            {
-                useMove01 = true;
-            }
-            else if (Input.GetButtonDown("s") && participantList[currentHero].proceedNext == false)
-            {
-                useMove02 = true;
-            }
-            else if (Input.GetButtonDown("d") && participantList[currentHero].proceedNext == false)
-            {
-                if (participantList[currentHero].UltimateLimitRequirement <= limitBreakCollection.limitBreakCurrent)
-                {
-                    limitBreakCollection.limitBreakCurrent -= participantList[currentHero].UltimateLimitRequirement;
-                    Transform limitBarHolder = playerPrefab.transform.parent.Find("Canvas/LimitBreakBar");
-                    Image limitBar = limitBarHolder.gameObject.GetComponent<Image>();
-                    limitBar.fillAmount = (float)gameManager.GetComponent<LimitBreakCollection>().limitBreakCurrent / (float)gameManager.GetComponent<LimitBreakCollection>().limitBreakMax;
-                    useUltimate = true;
-                }
-                else
-                {
-                    Debug.Log(participantList[currentHero].UltimateLimitRequirement + " ::: " + limitBreakCollection.limitBreakCurrent);
-                    moveNamesHolder.GetComponent<Animator>().SetTrigger("fire");
-                }
+                case (DialogueBattleConditions.BattleBeginning):
+                    if (beginningInitIsOver && !eventParams.thisEventIsDone)
+                    {
+                        dialogueConditionIsMet = true;
+                        chosenDialogueEvent = eventParams;
+                    }
+                    break;
+
+                case (DialogueBattleConditions.OnTurnX):
+                    if (eventParams.turnForDialogue == turnTracker && !eventParams.thisEventIsDone)
+                    {
+                        dialogueConditionIsMet = true;
+                        chosenDialogueEvent = eventParams;
+                    }
+                    break;
+
+                case (DialogueBattleConditions.EnemyHealthIs):
+                    break;
+
+                case (DialogueBattleConditions.PlayerHealthIs):
+                    break;
+
+                case (DialogueBattleConditions.EndBattle):
+                    break;
             }
         }
 
-        switch (currentState)
-        {
-            case (BattleStates.INTRO):
-                // Handle taking hero from running state to battle state.
-                // Intro main character animation.
-                introActions();
-                break;
-            case (BattleStates.START):
-                // Load in party members.
-                // Party member intro animations.
-                // Load in enemies.
-                // Enemy intro animations.
-                // Load in UI.
-                // Order turn priorities.
-                // Check who has turn priority and proceed to proper state.
-                startActions();
-                break;
-            case (BattleStates.PLAYERCHOICE):
-                // Prompt player to choose a move within time limit.
-                // Move should handle 'mini game.' Call move in player class.
-                // Move to PLAYERANIMATE.
-                break;
-            case (BattleStates.PLAYERANIMATE):
-                // Call player animation for move.
-                // Call actual mini game for move from player.
-                // Move to action summary.
-                break;
-            case (BattleStates.PLAYERACTIONSUMMARY):
-                // Calculate damage done.
-                // Apply damage done.
-                // Play damage taken animations.
-                // Check if enemy has taken lethal damage.
-                // Move to appropriate state (win/player choice/enemy choice).
-                break;
-            case (BattleStates.ENEMYCHOICE):
-                // Select ability to use. Maybe some abilities can be dodged / negated?
-                // Move to enemy animate.
-                break;
-            case (BattleStates.ENEMYANIMATE):
-                // Animate enemy.
-                // Player mini game.
-                // Move to action summary.
-                break;
-            case (BattleStates.ENEMYACTIONSUMMARY):
-                // Calculate damage done.
-                // Apply damage done.
-                // Play damage taken animations.
-                // Check if any player has taken lethal damage.
-                // Move to appropriate state. (lose/player choice/enemy choice)
-                break;
-            case (BattleStates.LOSE):
-                // Tell player they've lost. Animation? YOU DIED
-                // Revert back to last checkpoint.
-                loseActions();
-                break;
-            case (BattleStates.WIN):
-                // Winning animations.
-                // Deload party animations. Move player back to center at same time.
-                // Change from battle state controllers to running controller.
-                winActions();
-                break;
-        }
 
-        // Actions allowable to dodge abilities. IE: Jumping and position shifting
-        //if (participantList[currentHero].isEnemy)
+        if (!dialogueConditionIsMet)
         {
+            if (currentState == BattleStates.INTRO)
+            {
+                if (!firstPassPosition)
+                {
+                    playerStartTravelTime = Time.time;
+                    playerTravelDistance = Vector3.Distance(playerPrefab.transform.parent.position, gameLoop.battleEncounterInstance.playerPosition.position);
+                    firstPassPosition = true;
+                    containerBackInOriginalPosition = false;
+                }
+                float distCovered = (Time.time - playerStartTravelTime) * playerTravelSpeed;
+                float fracTraveled = distCovered / playerTravelDistance;
+                playerPrefab.transform.parent.position = Vector3.Lerp(playerPrefab.transform.parent.position, gameLoop.battleEncounterInstance.playerPosition.position, fracTraveled);
+                if (playerPrefab.transform.parent.position == gameLoop.battleEncounterInstance.playerPosition.position)
+                {
+                    currentState = BattleStates.START;
+                    beginningInitIsOver = true;
+                    camMovementScript.enabled = !camMovementScript.enabled;
+                    firstPassPosition = false;
+                }
+            }
+            else if (currentState == BattleStates.START)
+            {
+                moveNamesHolder.SetActive(true);
+                Move01Text.text = participantList[currentHero].Move01Name;
+                Move02Text.text = participantList[currentHero].Move02Name;
+                UltimateText.text = participantList[currentHero].UltimateName;
+                if (Input.GetButtonDown("a") && participantList[currentHero].proceedNext == false)
+                {
+                    useMove01 = true;
+                }
+                else if (Input.GetButtonDown("s") && participantList[currentHero].proceedNext == false)
+                {
+                    useMove02 = true;
+                }
+                else if (Input.GetButtonDown("d") && participantList[currentHero].proceedNext == false)
+                {
+                    if (participantList[currentHero].UltimateLimitRequirement <= limitBreakCollection.limitBreakCurrent)
+                    {
+                        limitBreakCollection.limitBreakCurrent -= participantList[currentHero].UltimateLimitRequirement;
+                        Transform limitBarHolder = playerPrefab.transform.parent.Find("Canvas/LimitBreakBar");
+                        Image limitBar = limitBarHolder.gameObject.GetComponent<Image>();
+                        limitBar.fillAmount = (float)gameManager.GetComponent<LimitBreakCollection>().limitBreakCurrent / (float)gameManager.GetComponent<LimitBreakCollection>().limitBreakMax;
+                        useUltimate = true;
+                    }
+                    else
+                    {
+                        Debug.Log(participantList[currentHero].UltimateLimitRequirement + " ::: " + limitBreakCollection.limitBreakCurrent);
+                        moveNamesHolder.GetComponent<Animator>().SetTrigger("fire");
+                    }
+                }
+            }
+
+            switch (currentState)
+            {
+                case (BattleStates.INTRO):
+                    // Handle taking hero from running state to battle state.
+                    // Intro main character animation.
+                    introActions();
+                    break;
+                case (BattleStates.START):
+                    // Load in party members.
+                    // Party member intro animations.
+                    // Load in enemies.
+                    // Enemy intro animations.
+                    // Load in UI.
+                    // Order turn priorities.
+                    // Check who has turn priority and proceed to proper state.
+                    startActions();
+                    break;
+                case (BattleStates.PLAYERCHOICE):
+                    // Prompt player to choose a move within time limit.
+                    // Move should handle 'mini game.' Call move in player class.
+                    // Move to PLAYERANIMATE.
+                    break;
+                case (BattleStates.PLAYERANIMATE):
+                    // Call player animation for move.
+                    // Call actual mini game for move from player.
+                    // Move to action summary.
+                    break;
+                case (BattleStates.PLAYERACTIONSUMMARY):
+                    // Calculate damage done.
+                    // Apply damage done.
+                    // Play damage taken animations.
+                    // Check if enemy has taken lethal damage.
+                    // Move to appropriate state (win/player choice/enemy choice).
+                    break;
+                case (BattleStates.ENEMYCHOICE):
+                    // Select ability to use. Maybe some abilities can be dodged / negated?
+                    // Move to enemy animate.
+                    break;
+                case (BattleStates.ENEMYANIMATE):
+                    // Animate enemy.
+                    // Player mini game.
+                    // Move to action summary.
+                    break;
+                case (BattleStates.ENEMYACTIONSUMMARY):
+                    // Calculate damage done.
+                    // Apply damage done.
+                    // Play damage taken animations.
+                    // Check if any player has taken lethal damage.
+                    // Move to appropriate state. (lose/player choice/enemy choice)
+                    break;
+                case (BattleStates.LOSE):
+                    // Tell player they've lost. Animation? YOU DIED
+                    // Revert back to last checkpoint.
+                    loseActions();
+                    break;
+                case (BattleStates.WIN):
+                    // Winning animations.
+                    // Deload party animations. Move player back to center at same time.
+                    // Change from battle state controllers to running controller.
+                    winActions();
+                    break;
+            }
+
+            // Actions allowable to dodge abilities. IE: Jumping and position shifting
+            //if (participantList[currentHero].isEnemy)
             // Jump
-            if (baseRunner.canJump && Input.GetButtonDown("Jump"))
+            if (baseRunner.canJump && Input.GetButtonDown("Jump") && participantList[currentHero].isEnemy && currentState != BattleStates.WIN)
             {
                 baseRunner.dynamicJumpImpulse = baseRunner.initialJumpImpulse;
                 baseRunner.currentTimeToHoldJump = Time.time;
@@ -191,7 +244,7 @@ public class BattleSystemStateMachine : MonoBehaviour {
                 }
                 else if (baseRunner.trackJump == 2) baseRunner.runner.SetTrigger("DoubleJump");
             }
-            if (Input.GetKeyUp("space"))
+            if (Input.GetKeyUp("space") && participantList[currentHero].isEnemy)
             {
                 baseRunner.letGoOfSpace = true;
                 baseRunner.fallVelocityDecay = 0;
@@ -215,8 +268,31 @@ public class BattleSystemStateMachine : MonoBehaviour {
                 baseRunner.isFalling = false;
                 baseRunner.fallVelocityDecay = 0;
             }
+            // Right dash
+            if (participantList[currentHero].isEnemy && currentState != BattleStates.WIN && currentState != BattleStates.LOSE)
+            {
+                if (Input.GetKeyDown("right") && dashPositionTracker < 1)
+                {
+                    dashPositionTracker++;
+                    playerContainerObject.transform.position = new Vector3(playerContainerObject.transform.position.x + 2.0f,
+                                                                           playerContainerObject.transform.position.y,
+                                                                           playerContainerObject.transform.position.z);
+                }
+                if (Input.GetKeyDown("left") && dashPositionTracker > -1)
+                {
+                    dashPositionTracker--;
+                    playerContainerObject.transform.position = new Vector3(playerContainerObject.transform.position.x - 2.0f,
+                                                                           playerContainerObject.transform.position.y,
+                                                                           playerContainerObject.transform.position.z);
+                }
+            }
         }
-	}
+        // dialogue condition is met here vvv
+        else
+        {
+            dialogueManager.DialogueEventInsideBattle(chosenDialogueEvent);
+        }
+    }
 
     public void battleFixedUpdate()
     {
@@ -383,48 +459,57 @@ public class BattleSystemStateMachine : MonoBehaviour {
 
     public void winActions()
     {
-        Debug.Log("You won!");
+        //Debug.Log("You won!");
         moveNamesHolder.SetActive(false);
-        gameLoop.isRunning = true;
-        gameLoop.isBattle = false;
-        gameLoop.cameraAnimator.SetBool("BattleState", false);
-        gameLoop.cameraAnimator.SetBool("RunnerState", true);
-        BaseCharacterClass mcScript = playerPrefab.GetComponent<BaseCharacterClass>();
-        if (mcScript.Health <= 0)
+        gameLoop.battleEncounterInstance.gameObject.SetActive(false);
+        returnPlayerContainerToZero();
+        if (containerBackInOriginalPosition)
         {
-            mcScript.Health = 1;
-            mcScript.isDead = false;
-            playerPrefab.GetComponent<Animator>().SetTrigger("Idle");
+            Debug.Log("container back to 0");
+            gameLoop.isRunning = true;
+            gameLoop.isBattle = false;
+            gameLoop.cameraAnimator.SetBool("BattleState", false);
+            gameLoop.cameraAnimator.SetBool("RunnerState", true);
+            BaseCharacterClass mcScript = playerPrefab.GetComponent<BaseCharacterClass>();
+            if (mcScript.Health <= 0)
+            {
+                mcScript.Health = 1;
+                mcScript.isDead = false;
+                playerPrefab.GetComponent<Animator>().SetTrigger("Idle");
+            }
+            foreach (BaseCharacterClass hero in heroList)
+            {
+                if (healthManager.ContainsKey(hero.CharacterClassName))
+                {
+                    healthManager[hero.CharacterClassName] = hero.Health;
+                }
+                else
+                {
+                    healthManager.Add(hero.CharacterClassName, hero.Health);
+                }
+            }
+            foreach (KeyValuePair<BaseCharacterClass, GameObject> character in participantDictionary)
+            {
+                if (character.Value.gameObject == playerPrefab)
+                {
+                    continue;
+                }
+                else
+                {
+                    Destroy(character.Value.gameObject);
+                }
+            }
+            turnTracker = 0;
+            beginningInitIsOver = false;
+            camMovementScript.enabled = !camMovementScript.enabled;
+            participantDictionary.Clear();
+            participantList.Clear();
+            heroList.Clear();
+            enemyList.Clear();
+            currentHero = 0;
+            listCreationFinished = false;
+            currentState = BattleStates.INTRO;
         }
-        foreach (BaseCharacterClass hero in heroList)
-        {
-            if (healthManager.ContainsKey(hero.CharacterClassName))
-            {
-                healthManager[hero.CharacterClassName] = hero.Health;
-            }
-            else
-            {
-                healthManager.Add(hero.CharacterClassName, hero.Health);
-            }
-        }
-        foreach (KeyValuePair<BaseCharacterClass, GameObject> character in participantDictionary)
-        {
-            if (character.Value.gameObject == playerPrefab)
-            {
-                continue;
-            }
-            else
-            {
-                Destroy(character.Value.gameObject);
-            }
-        }
-        participantDictionary.Clear();
-        participantList.Clear();
-        heroList.Clear();
-        enemyList.Clear();
-        currentHero = 0;
-        listCreationFinished = false;
-        currentState = BattleStates.INTRO;
     }
 
     public void loseActions()
@@ -446,6 +531,9 @@ public class BattleSystemStateMachine : MonoBehaviour {
                 Destroy(character.Value.gameObject);
             }
         }
+        turnTracker = 0;
+        beginningInitIsOver = false;
+        camMovementScript.enabled = !camMovementScript.enabled;
         participantDictionary.Clear();
         participantList.Clear();
         heroList.Clear();
@@ -512,6 +600,7 @@ public class BattleSystemStateMachine : MonoBehaviour {
                 Debug.Log(participantList[currentHero].CharacterClassName + " deals " + pair.Value.ToString() + " damage to " + pair.Key.CharacterClassName);
             }
             currentHero++;
+            turnTracker++;
             checkForDeath();
             checkForEnd();
             resetTrackerCount();
@@ -563,10 +652,30 @@ public class BattleSystemStateMachine : MonoBehaviour {
                 healthBar.fillAmount = (float)heroList[randomHero].Health / (float)heroList[randomHero].MaxHealth;
                 Debug.Log(participantList[currentHero].CharacterClassName + " deals " + moveDamage.ToString() + " damage to " + heroList[randomHero].CharacterClassName + ". " + heroList[randomHero].Health.ToString() + " health left.");
                 currentHero++;
+                turnTracker++;
                 checkForDeath();
                 checkForEnd();
                 resetTrackerCount();
             }
+        }
+    }
+
+    public void returnPlayerContainerToZero()
+    {
+        Debug.Log(gameLoop.isRunning);
+        if (!firstPassPosition)
+        {
+            playerStartTravelTime = Time.time;
+            playerTravelDistance = Vector3.Distance(playerContainerObject.transform.localPosition, Vector3.zero);
+            firstPassPosition = true;
+        }
+        float distCovered = (Time.time - playerStartTravelTime) * playerTravelSpeed;
+        float fracTraveled = distCovered / playerTravelDistance;
+        playerContainerObject.transform.localPosition = Vector3.Lerp(playerContainerObject.transform.localPosition, Vector3.zero, fracTraveled);
+        if (playerContainerObject.transform.localPosition == Vector3.zero)
+        {
+            firstPassPosition = false;
+            containerBackInOriginalPosition = true;
         }
     }
 }

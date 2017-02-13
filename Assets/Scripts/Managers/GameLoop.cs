@@ -11,8 +11,12 @@ public class GameLoop : MonoBehaviour {
     public bool isRunning = true;
     public bool isBattle = false;
     public bool isQTE = false;
+    public bool isDialogue = false;
+    public bool isDialogueInBattle = false;
     public EncounterScript battleEncounterInstance;
     public QTEChoiceClass qteInstance;
+    public DialogueClass dialogueInstance;
+    public DialogueManager dialogueManager;
     public PartyManager partyManager;
     public Animator cameraAnimator;
     public GameManager gameManager;
@@ -32,6 +36,11 @@ public class GameLoop : MonoBehaviour {
             qteControl.QTEUpdate();
         }
 
+        if (isDialogue)
+        {
+            dialogueManager.DialogueUpdate();
+        }
+
         if (isRunning)
         {
             runnerControl.runnerUpdate();
@@ -39,6 +48,10 @@ public class GameLoop : MonoBehaviour {
         else if (isBattle)
         {
             battleControl.battleUpdate();
+            if (isDialogueInBattle)
+            {
+                dialogueManager.DialogueUpdate();
+            }
         }
         timerText.text = ((int)Time.time).ToString();
     }
@@ -81,5 +94,21 @@ public class GameLoop : MonoBehaviour {
         {
             isRunning = false;
         }
+    }
+
+    public void initiateDialogue(Collider other)
+    {
+        dialogueInstance = other.gameObject.GetComponent<DialogueClass>();
+        isDialogue = true;
+        if (dialogueInstance.stopMovement)
+        {
+            isRunning = false;
+        }        
+    }
+
+    public void initiateDialogueInsideBattle(Collider other)
+    {
+        dialogueInstance = other.gameObject.GetComponent<DialogueClass>();
+        isDialogueInBattle = true;
     }
 }

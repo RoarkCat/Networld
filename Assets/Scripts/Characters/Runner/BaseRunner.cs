@@ -265,6 +265,10 @@ using System.Collections.Generic;
                 {
                     gameLoop.initiateQTE(hit.collider);
                 }
+                else if (hit.collider.tag == "DialogueZone")
+                {
+                    gameLoop.initiateDialogue(hit.collider);
+                }
                 else if (hit.collider.tag == "Checkpoint")
                 {
                     hit.transform.GetComponent<CheckpointCheck>().feedDataToGameManager(playerObjectTransform.transform.parent.GetComponent<Collider>());

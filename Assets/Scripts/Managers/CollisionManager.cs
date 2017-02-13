@@ -12,10 +12,18 @@ public class CollisionManager : MonoBehaviour {
         if (other.tag == "BattleZone")
         {
             gameLoop.initiateBattle(other);
+            if (other.GetComponent<DialogueClass>() != null)
+            {
+                gameLoop.initiateDialogueInsideBattle(other);
+            }
         }
         else if (other.tag == "QTEZone")
         {
             gameLoop.initiateQTE(other);
+        }
+        else if (other.tag == "DialogueZone")
+        {
+            gameLoop.initiateDialogue(other);
         }
         else if (other.tag == "KillPlayer")
         {

@@ -9,7 +9,7 @@ public class BossJackson : BaseCharacterClass
     {
         CharacterClassName = "BigBadJackson";
         CharacterClassDescription = "This a boss.";
-        Health = 600;
+        Health = 50;
         MaxHealth = 600;
         TurnPriority = 1;
         isEnemy = true;
